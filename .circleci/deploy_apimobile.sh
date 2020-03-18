@@ -1,5 +1,6 @@
 cd /home/ohl/controlCamionesApi/apimobile
-git pull https://github.com/giovanniavalora/apimobile.git
+gitcheckout develop
+git pull
 cd /home/ohl/controlCamionesApi/
 docker-compose -f docker-compose.prod.yml up -d --build
 #docker-compose -f docker-compose.prod.yml exec web python manage.py migrate --noinput
