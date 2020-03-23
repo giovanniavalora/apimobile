@@ -42,26 +42,35 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'rest_framework.authtoken',
     'api.apps.ApiConfig',
 ]
 
-"""
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework.authentication.TokenAuthentication',
-    ),
-    'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.IsAuthenticated',
-    )
-}
+# AUTH_USER_MODEL = 'api.User'
 
-REST_FRAMEWORK = {
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.AllowAny',
-    ]
-}
-"""
+# REST_FRAMEWORK = {
+#   'DEFAULT_AUTHENTICATION_CLASSES': (
+#         'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
+#         'api.backends.JWTAdministradorAuthentication',
+#         'api.backends.JWTDespachadorAuthentication',
+#   )
+# }
+
+
+
+# REST_FRAMEWORK = {
+#     'DEFAULT_AUTHENTICATION_CLASSES': (
+#         'rest_framework.authentication.TokenAuthentication',
+#     ),
+#     'DEFAULT_PERMISSION_CLASSES': (
+#         'rest_framework.permissions.IsAuthenticated',
+#     )
+# }
+
+# REST_FRAMEWORK = {
+#     'DEFAULT_PERMISSION_CLASSES': [
+#         'rest_framework.permissions.AllowAny',
+#     ]
+# }
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -96,37 +105,41 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
-"""
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    }
-}
-"""
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': os.path.join(BASE_DIR, 'ohlcamiones'),
+#         "USER":"ohl",
+#         "PASSWORD": "ohl",
+#         "HOST": "localhost",
+#         "PORT": "5432",
+#     }
+# }
+
 
 DATABASES = {
     "default": {
-        "ENGINE": os.environ.get("SQL_ENGINE", "django.db.backends.postgresql_psycopg2"),
-        "NAME": os.environ.get("SQL_DATABASE", os.path.join(BASE_DIR, "db.ohlcamiones")),
+        "ENGINE": os.environ.get("SQL_ENGINE", "django.db.backends.sqlite3'"),
+        "NAME": os.environ.get("SQL_DATABASE", os.path.join(BASE_DIR, "db.sqlite3")),
         "USER": os.environ.get("SQL_USER", "ohl"),
         "PASSWORD": os.environ.get("SQL_PASSWORD", "ohl"),
         "HOST": os.environ.get("SQL_HOST", "localhost"),
         "PORT": os.environ.get("SQL_PORT", "5432"),
     }
 }
-"""
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'ohlcamiones',
-        'USER': 'ohl',
-        'PASSWORD': 'ohl',
-        'HOST': 'db',
-        'PORT': 5432,
-    }
-}
-"""
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
+#         'NAME': 'ohlcamiones',
+#         'USER': 'ohl',
+#         'PASSWORD': 'ohl',
+#         'HOST': 'db',
+#         'PORT': 5432,
+#     }
+# }
+
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
 
@@ -149,9 +162,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/3.0/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'es'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'America/Santiago'
 
 USE_I18N = True
 
