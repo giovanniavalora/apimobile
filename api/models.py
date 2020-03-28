@@ -1,10 +1,11 @@
-# import jwt
-# from django.conf import settings
-# from django.contrib.auth.models import (AbstractBaseUser, PermissionsMixin, BaseUserManager)
-# from django.utils import timezone
-# from datetime import datetime, timedelta
+from __future__ import unicode_literals
+from django.utils import timezone
+from django.db import transaction
+from django.contrib.auth.models import (AbstractBaseUser, PermissionsMixin, BaseUserManager)
 
 from django.db import models
+
+
 
 
 class Proyecto(models.Model):
@@ -20,197 +21,222 @@ class Proyecto(models.Model):
     def __str__(self):
         return self.centro_de_coste
 
-class Administrador(models.Model):
-    username_admin = models.CharField(max_length = 20, unique=True)
-    password_admin = models.CharField(max_length=128)
+
+
+class UserManager(BaseUserManager):
+    use_in_migrations = True
+    def _create_user(self, rut, password, **extra_fields):
+        if not rut:
+            raise ValueError('The given rut must be set')
+        try:
+            with transaction.atomic():
+                user = self.model(rut=rut, **extra_fields)
+                user.set_password(password)
+                print("Useeeeeeeeeeeeeeeeeeeeereerr!<----------------------iam here")
+                user.save(using=self._db)
+                return user
+        except:
+            raise
+    def create_user(self, rut, password=None, **extra_fields):
+        extra_fields.setdefault('is_staff', False)
+        extra_fields.setdefault('is_superuser', False)
+        return self._create_user(rut, password, **extra_fields)    
+    def create_superuser(self, rut, password, **extra_fields):
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+        return self._create_user(rut, password=password, **extra_fields)
+        
+class AdminManager(BaseUserManager):
+    use_in_migrations = True
+    def _create_user(self, rut, password, **extra_fields):
+        if not rut:
+            raise ValueError('The given rut must be set')
+        try:
+            with transaction.atomic():
+                user = self.model(rut=rut, **extra_fields)
+                user.set_password(password)
+                print("Administradooooooooooooooor!<----------------------iam here")
+                user.save(using=self._db)
+                return user
+        except:
+            raise
+    def create_user(self, rut, password=None, **extra_fields):
+        extra_fields.setdefault('is_staff', False)
+        extra_fields.setdefault('is_superuser', False)
+        return self._create_user(rut, password, **extra_fields)    
+    def create_superuser(self, rut, password, **extra_fields):
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+        return self._create_user(rut, password=password, **extra_fields)
+
+class DespManager(BaseUserManager):
+    use_in_migrations = True
+    def _create_user(self, rut, password, **extra_fields):
+        if not rut:
+            raise ValueError('The given rut must be set')
+        try:
+            with transaction.atomic():
+                user = self.model(rut=rut, **extra_fields)
+                user.set_password(password)
+                print("Despachaadooooooooooooooor!<----------------------iam here")
+                user.save(using=self._db)
+                return user
+        except:
+            raise
+    def create_user(self, rut, password=None, **extra_fields):
+        extra_fields.setdefault('is_staff', False)
+        extra_fields.setdefault('is_superuser', False)
+        return self._create_user(rut, password, **extra_fields)    
+    def create_superuser(self, rut, password, **extra_fields):
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+        return self._create_user(rut, password=password, **extra_fields)
+
+
+class User(AbstractBaseUser, PermissionsMixin):
+    rut = models.CharField(max_length=15, unique=True)    #rut
+    nombre = models.CharField(max_length=30, blank=True)
+    apellido = models.CharField(max_length=30, blank=True)
+    is_active = models.BooleanField(default=True)
+    is_staff = models.BooleanField(default=False)
+    date_joined = models.DateTimeField(default=timezone.now)
     proyecto = models.ForeignKey(Proyecto, on_delete=models.CASCADE)
-    # id_proyecto = models.ForeignKey(Proyecto, related_name='administradores', on_delete=models.CASCADE)
 
+    objects = UserManager()
+    USERNAME_FIELD = 'rut'
+    REQUIRED_FIELDS = ['nombre', 'apellido']
     def __str__(self):
-        return self.username_admin
+        return self.rut
+    def save(self, *args, **kwargs):
+        super(User, self).save(*args, **kwargs)
+        return self
 
-    class Meta:
-        verbose_name_plural = "Administradores"
-
-class Despachador(models.Model):
-    rut_despachador = models.CharField(max_length = 20, unique=True)
-    password_despachador = models.CharField(max_length=128)
-    nombre_despachador = models.CharField(max_length = 50)
-    apellido_despachador = models.CharField(max_length = 50)
-    telefono_despachador = models.CharField(max_length = 20)
-    proyecto = models.ForeignKey(Proyecto, on_delete=models.CASCADE)
-    # id_proyecto = models.ForeignKey(Proyecto, related_name='despachadores', on_delete=models.CASCADE)
-
-    def __str__(self):
-        return self.rut_despachador
-
-    class Meta:
-        verbose_name_plural = "Despachadores"
-
-# class Voucher(models.Model):
-#     id_despachador = models.ForeignKey(Despachador, on_delete=models.CASCADE, null=True)
-#     proyecto = models.CharField(max_length = 100)
-#     nombre_cliente = models.CharField(max_length = 50)
-#     rut_cliente = models.CharField(max_length = 20)
-#     nombre_subcontratista = models.CharField(max_length = 100)
-#     rut_subcontratista = models.CharField(max_length = 20)
-#     nombre_conductor_principal = models.CharField(max_length = 50)
-#     apellido_conductor_principal = models.CharField(max_length = 50)
-#     fecha = models.CharField(max_length = 20)
-#     hora = models.CharField(max_length = 20)
-#     patente = models.CharField(max_length = 20)
-#     volumen = models.CharField(max_length = 20)
-#     tipo_material = models.CharField(max_length = 50)
-#     punto_origen = models.CharField(max_length = 100)
-#     punto_suborigen = models.CharField(max_length = 100)
-#     punto_destino = models.CharField(max_length = 100)
-#     contador_impresiones = models.IntegerField()
-
-# class Subcontratista(models.Model):
-#     id_proyecto = models.ForeignKey(Proyecto, on_delete=models.CASCADE, null=True)
-#     rut = models.CharField(max_length = 20)
-#     razon_social = models.CharField(max_length = 100)
-#     nombre_subcontratista = models.CharField(max_length = 100)
-#     nombre_contacto = models.CharField(max_length = 50)
-#     apellido_contacto = models.CharField(max_length = 50)
-#     email_contacto = models.CharField(max_length = 100, blank=True, default='')
-#     telefono_contacto = models.CharField(max_length = 20)
-
-# class Camion(models.Model):
-#     id_subcontratista = models.ForeignKey(Subcontratista, on_delete=models.CASCADE, null=True)
-#     patente_camion = models.CharField(max_length = 20)
-#     marca_camion = models.CharField(max_length = 20)
-#     modelo_camion = models.CharField(max_length = 20)
-#     capacidad_camion = models.CharField(max_length = 20)
-#     nombre_conductor_principal = models.CharField(max_length = 50)
-#     apellido_conductor_principal = models.CharField(max_length = 50)
-#     telefono_conductor_principal = models.CharField(max_length = 20)
-#     descripcion = models.CharField(max_length = 20)
-#     QR = models.CharField(max_length = 200)    #almacenar la imagen del QR? id?
-
-# class Origen(models.Model):
-#     id_proyecto = models.ForeignKey(Proyecto, on_delete=models.CASCADE, null=True)
-#     nombre_origen = models.CharField(max_length = 100)
-#     longitud = models.CharField(max_length = 20)
-#     latitud = models.CharField(max_length = 20)
-
-# class Suborigen(models.Model):
-#     id_origen = models.ForeignKey(Origen, on_delete=models.CASCADE, null=True)
-#     nombre_suborigen = models.CharField(max_length = 20)
-#     activo = models.BooleanField()
-
-# class Destino(models.Model):
-#     id_proyecto = models.ForeignKey(Proyecto, on_delete=models.CASCADE, null=True)
-#     nombre_destino = models.CharField(max_length = 100)
-#     nombre_propietario = models.CharField(max_length = 100)
-#     rut_propietario = models.CharField(max_length = 20)
-#     direccion = models.CharField(max_length = 100)
-#     longitud = models.CharField(max_length = 20)
-#     latitud = models.CharField(max_length = 20)
-
-# class Material(models.Model):
-#     id_destino = models.ForeignKey(Destino, on_delete=models.CASCADE, null=True)
-#     material = models.CharField(max_length = 50)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# #Autenticacion y Autorizacion
-# class UserManager(BaseUserManager):
-#     def get_by_natural_key(self, rut):
-#         return self.get(rut=rut)
- 
-# class AdministradorManager(BaseUserManager):
-#     def create_administrador(self, first_name, last_name, rut, email, id_proyecto, password=None):
-#         if rut is None:
-#             raise TypeError('Users must have a rut.')
-#         administrador = Administrador(first_name=first_name, last_name=last_name, 
-#                           rut=rut, email=self.normalize_email(email),
-#                           id_proyecto=id_proyecto)
-#         administrador.set_password(password)
-#         administrador.save()
-#         return administrador
- 
-# class DespachadorManager(BaseUserManager):
-#     def create_despachador(self, first_name, last_name, rut, email, phone, password=None):
-#         if rut is None:
-#             raise TypeError('Users must have a rut.')
-#         despachador = Despachador(first_name=first_name, last_name=last_name, 
-#                             rut=rut, email=self.normalize_email(email),
-#                             phone=phone)
-#         despachador.set_password(password)
-#         despachador.save()
-#         return despachador
-
-
-# #Primero se crea la clase user de la cual heredaran Administrador y Despachador
-# class User(AbstractBaseUser, PermissionsMixin):
-#     rut = models.CharField(db_index=True, max_length=13, unique=True)
-#     first_name = models.CharField(max_length=100)
-#     last_name = models.CharField(max_length=100)
-
-#     is_active = models.BooleanField(default=True)
-#     created_at = models.DateTimeField(auto_now_add=True)
-#     updated_at = models.DateTimeField(auto_now=True)
- 
-#     USERNAME_FIELD = 'rut'
-#     REQUIRED_FIELDS = ['first_name','last_name',]
+class Administrador(User, PermissionsMixin):
+    email = models.CharField(max_length=30, blank=True)
     
-#     objects = UserManager()
- 
-#     @property
-#     def token(self):
-#         dt = datetime.now() + timedelta(hours=12)
-#         token = jwt.encode({
-#             'id': user_id,
-#             'exp': int(time.mktime(dt.timetuple()))
-#         }, settings.SECRET_KEY, algorithm='HS256')
-#         return token.decode('utf-8')
- 
-#     def get_full_name(self):
-#         return (self.first_name+' '+self.last_name)
+    objects = AdminManager()
+    USERNAME_FIELD = 'rut'
+    REQUIRED_FIELDS = ['nombre', 'apellido']
+    def __str__(self):
+        return self.nombre
+    # def save(self, *args, **kwargs):
+    #     Administrador.objects.create_superuser(Administrador ,rut, password, *args, **kwargs)
+    #     super(Administrador, self).save(*args, **kwargs)
+    #     return self
 
-#     def get_short_name(self):
-#         return self.first_name
- 
-#     def natural_key(self):
-#         return (self.first_name, self.last_name)
- 
+class Despachador(User, PermissionsMixin):
+    telefono = models.CharField(max_length=30, blank=True)
+    origen_asignado = models.IntegerField(blank=True, null=True)
+
+    objects = DespManager()
+    USERNAME_FIELD = 'rut'
+    REQUIRED_FIELDS = ['nombre', 'apellido']
+    def __str__(self):
+        return self.nombre
+    # def save(self, *args, **kwargs):
+    #     super(Despachador, self).save(*args, **kwargs)
+    #     return self
+
+
+# class Administrador(models.Model):
+#     username_admin = models.CharField(max_length = 20, unique=True)
+#     password_admin = models.CharField(max_length=128)
+#     proyecto = models.ForeignKey(Proyecto, on_delete=models.CASCADE)
+
 #     def __str__(self):
-#         return self.rut
+#         return self.username_admin
 
+#     class Meta:
+#         verbose_name_plural = "Administradores"
 
-# class Administrador(User, PermissionsMixin):
-#     id_proyecto = models.ForeignKey(Proyecto, on_delete=models.CASCADE, null=True)
-#     email = models.EmailField(db_index=True, unique=True)
- 
-#     USERNAME_FIELD = 'rut'
-#     REQUIRED_FIELDS = ['first_name', 'last_name','email' ]
- 
-#     objects = AdministradorManager()
- 
+# class Despachador(models.Model):
+#     rut_despachador = models.CharField(max_length = 20, unique=True)
+#     password_despachador = models.CharField(max_length=128)
+#     nombre_despachador = models.CharField(max_length = 50)
+#     apellido_despachador = models.CharField(max_length = 50)
+#     telefono_despachador = models.CharField(max_length = 20)
+#     proyecto = models.ForeignKey(Proyecto, on_delete=models.CASCADE)
+
 #     def __str__(self):
-#         return self.first_name
+#         return self.rut_despachador
 
-# class Despachador(User, PermissionsMixin):
-#     id_proyecto = models.ForeignKey(Proyecto, on_delete=models.CASCADE, null=True)
-#     phone= models.CharField(max_length = 20)
- 
-#     USERNAME_FIELD = 'email'
-#     REQUIRED_FIELDS = ['first_name', 'last_name', 'phone']
- 
-#     objects = DespachadorManager()
- 
-#     def __str__(self):
-#         return self.first_name
+#     class Meta:
+#         verbose_name_plural = "Despachadores"
+
+class Voucher(models.Model):
+    despachador = models.ForeignKey(Despachador, on_delete=models.CASCADE)
+    proyecto = models.CharField(max_length = 100)
+    nombre_cliente = models.CharField(max_length = 50)
+    rut_cliente = models.CharField(max_length = 20)
+    nombre_subcontratista = models.CharField(max_length = 100)
+    rut_subcontratista = models.CharField(max_length = 20)
+    nombre_conductor_principal = models.CharField(max_length = 50)
+    apellido_conductor_principal = models.CharField(max_length = 50)
+    fecha = models.DateTimeField(auto_now_add=True)
+    hora = models.DateTimeField(default=timezone.now)
+    patente = models.CharField(max_length = 20)
+    volumen = models.CharField(max_length = 20)
+    tipo_material = models.CharField(max_length = 50)
+    punto_origen = models.CharField(max_length = 100)
+    punto_suborigen = models.CharField(max_length = 100)
+    punto_destino = models.CharField(max_length = 100)
+    contador_impresiones = models.IntegerField()
+
+class Subcontratista(models.Model):
+    proyecto = models.ForeignKey(Proyecto, on_delete=models.CASCADE)
+    rut = models.CharField(max_length = 20)
+    razon_social = models.CharField(max_length = 100)
+    nombre_subcontratista = models.CharField(max_length = 100)
+    nombre_contacto = models.CharField(max_length = 50)
+    apellido_contacto = models.CharField(max_length = 50)
+    email_contacto = models.CharField(max_length = 100, blank=True, default='')
+    telefono_contacto = models.CharField(max_length = 20)
+
+class Camion(models.Model):
+    subcontratista = models.ForeignKey(Subcontratista, on_delete=models.CASCADE)
+    patente_camion = models.CharField(max_length = 20)
+    marca_camion = models.CharField(max_length = 20)
+    modelo_camion = models.CharField(max_length = 20)
+    capacidad_camion = models.CharField(max_length = 20)
+    nombre_conductor_principal = models.CharField(max_length = 50)
+    apellido_conductor_principal = models.CharField(max_length = 50)
+    telefono_conductor_principal = models.CharField(max_length = 20)
+    descripcion = models.CharField(max_length = 20)
+
+class Origen(models.Model):
+    proyecto = models.ForeignKey(Proyecto, on_delete=models.CASCADE)
+    nombre_origen = models.CharField(max_length = 100)
+    longitud = models.CharField(max_length = 20)
+    latitud = models.CharField(max_length = 20)
+
+class Suborigen(models.Model):
+    origen = models.ForeignKey(Origen, on_delete=models.CASCADE)
+    nombre_suborigen = models.CharField(max_length = 20)
+    activo = models.BooleanField()
+
+class Destino(models.Model):
+    proyecto = models.ForeignKey(Proyecto, on_delete=models.CASCADE)
+    nombre_destino = models.CharField(max_length = 100)
+    nombre_propietario = models.CharField(max_length = 100)
+    rut_propietario = models.CharField(max_length = 20)
+    direccion = models.CharField(max_length = 100)
+    longitud = models.CharField(max_length = 20)
+    latitud = models.CharField(max_length = 20)
+
+class Material(models.Model):
+    destino = models.ForeignKey(Destino, on_delete=models.CASCADE)
+    material = models.CharField(max_length = 100)
+
+class CodigoQR(models.Model):
+    camion = models.ForeignKey(Camion, on_delete=models.CASCADE)
+    activo = models.BooleanField()
+
+
+
+
+
+
+
+
+
 

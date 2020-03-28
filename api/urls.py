@@ -10,23 +10,32 @@ from api.views import *
 router = routers.DefaultRouter()
 router.register(r'Proyecto', views.ProyectoViewSet)
 
-router.register(r'Administrador', views.AdministradorViewSet)
-router.register(r'Despachador', views.DespachadorViewSet)
+# router.register(r'Administrador', views.AdministradorViewSet)
+# router.register(r'Despachador', views.DespachadorViewSet)
 # router.register(r'auth', views.UserLogin)
 
-# router.register(r'Subcontratista', views.SubcontratistaViewSet)
-# router.register(r'Camion', views.CamionViewSet)
-# router.register(r'Origen', views.OrigenViewSet)
-# router.register(r'Suborigen', views.SuborigenViewSet)
-# router.register(r'Destino', views.DestinoViewSet)
-# router.register(r'Material', views.MaterialViewSet)
-# router.register(r'Voucher', views.VoucherViewSet)
+router.register(r'Subcontratista', views.SubcontratistaViewSet)
+router.register(r'Camion', views.CamionViewSet)
+router.register(r'Origen', views.OrigenViewSet)
+router.register(r'Suborigen', views.SuborigenViewSet)
+router.register(r'Destino', views.DestinoViewSet)
+router.register(r'Material', views.MaterialViewSet)
+router.register(r'Voucher', views.VoucherViewSet)
 # rouer.register(r'SincronizacionDescarga', SincronizacionDescarga.as_view())
 
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('AdministradorTest', AdministradorTest.as_view()),
+    path('crearUsuario/', CreateUserAPIView.as_view()),
+    path('crearAdministrador/', CreateAdminAPIView.as_view()),
+    path('crearDespachador/', CreateDespAPIView.as_view()),
+    path('update/', UserRetrieveUpdateAPIView.as_view()),
+    path('obtain_token/', authenticate_user),
+    path('SincronizacionDescarga/', SincronizacionDescarga.as_view()),
+    # path('SincronizacionDescarga/<int:pk>/', SincronizacionDescarga.as_view()),
+
+    # path('AdministradorTest/', AdministradorTest.as_view()),
+    # path('Texto/', Texto.as_view()),
     # path('userlogin', UserLogin.as_view()),
     # path('user-admin/', AdministradorRegistration.as_view()),
     # path('user-desp/', DespachadorRegistration.as_view()),

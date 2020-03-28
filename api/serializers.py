@@ -8,82 +8,146 @@ from rest_framework import serializers
 from .models import *
 
 
-class AdministradorSerializer(serializers.HyperlinkedModelSerializer):
-    # id_proyecto_id = serializers.RelatedField(source='id_proyecto', read_only=True)
-    class Meta:
-        model = Administrador
-        fields = ('id','url','username_admin','password_admin','proyecto')
-        # fields = ('id','url','username_admin','password_admin','id_proyecto_id')
-        
-class DespachadorSerializer(serializers.HyperlinkedModelSerializer):
-    # id_proyecto_id = serializers.RelatedField(source='id_proyecto', read_only=True)
-    class Meta:
-        model = Despachador
-        fields = ('id','url','rut_despachador','password_despachador','nombre_despachador',
-        'apellido_despachador','telefono_despachador','proyecto')
-        # fields = ('id','rut_despachador','password_despachador','nombre_despachador',
-        # 'apellido_despachador','telefono_despachador','id_proyecto_id')
-
-
-class ProyectoSerializer(serializers.HyperlinkedModelSerializer):
+class ProyectoSerializer(serializers.ModelSerializer):
     # administradores = serializers.RelatedField(many=True, read_only=True)    
     # despachadores = serializers.RelatedField(many=True, read_only=True)
     class Meta:
         model = Proyecto
-        fields = ('id','url','centro_de_coste','nombre_proyecto','ubicacion',
-        'cliente','rut_cliente','mandante','rut_mandante','mandante_final')
+        fields = '__all__'
+        # fields = ('id','centro_de_coste','nombre_proyecto','ubicacion',
+        # 'cliente','rut_cliente','mandante','rut_mandante','mandante_final')
         # fields = ('id','url','centro_de_coste','nombre_proyecto','ubicacion',
         # 'cliente','rut_cliente','mandante','rut_mandante','mandante_final',
         # 'despachadores','administradores')
 
 
+class UserSerializer(serializers.ModelSerializer):
+    date_joined = serializers.ReadOnlyField()
+    class Meta(object):
+        model = User
+        fields = '__all__'
+        extra_kwargs = {'password': {'write_only': True}}
+    def create(self, validated_data):
+        return User.objects.create(**validated_data)
+    def update(self, instance, validated_data):
+        instance.save()
+        return instance
 
-# class SubcontratistaSerializer(serializers.HyperlinkedModelSerializer):
-#     id_proyecto_id = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
-#     class Meta:
-#         model = Subcontratista
-#         fields = ('id','url','rut','razon_social','nombre_subcontratista','nombre_contacto',
-#         'apellido_contacto','email_contacto','telefono_contacto','id_proyecto_id')
+class AdministradorSerializer(serializers.ModelSerializer):
+    date_joined = serializers.ReadOnlyField()
+    class Meta(object):
+        model = Administrador
+        fields = '__all__'
+        extra_kwargs = {'password': {'write_only': True}}
+    def create(self, validated_data):
+        return Administrador.objects.create_superuser(**validated_data)
+    def update(self, instance, validated_data):
+        instance.rut = validated_data.get('rut', instance.rut)
+        instance.nombre = validated_data.get('content', instance.nombre)
+        instance.apellido = validated_data.get('content', instance.apellido)
+        instance.proyecto = validated_data.get('created', instance.proyecto)
+        instance.save()
+        return instance
 
-# class CamionSerializer(serializers.HyperlinkedModelSerializer):
-#     id_subcontratista_id = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
-#     class Meta:
-#         model = Camion
-#         fields = ('id','url','patente_camion','marca_camion','modelo_camion','capacidad_camion',
-#         'nombre_conductor_principal','apellido_conductor_principal',
-#         'telefono_conductor_principal','descripcion','QR','id_subcontratista_id')
+class DespachadorSerializer(serializers.ModelSerializer):
+    date_joined = serializers.ReadOnlyField()
+    class Meta(object):
+        model = Despachador
+        fields = '__all__'
+        extra_kwargs = {'password': {'write_only': True}}
+    def create(self, validated_data):
+        return Despachador.objects.create_user(**validated_data)
+    def update(self, instance, validated_data):
+        instance.rut = validated_data.get('rut', instance.rut)
+        instance.nombre = validated_data.get('content', instance.nombre)
+        instance.apellido = validated_data.get('content', instance.apellido)
+        instance.proyecto = validated_data.get('created', instance.proyecto)
+        instance.save()
+        return instance
 
-# class OrigenSerializer(serializers.HyperlinkedModelSerializer):
-#     id_proyecto_id = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
-#     class Meta:
-#         model = Origen
-#         fields = ('id','nombre_origen','longitud','latitud','id_proyecto_id')
 
-# class SuborigenSerializer(serializers.HyperlinkedModelSerializer):
-#     id_origen_id = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
-#     class Meta:
-#         model = Suborigen
-#         fields = ('id','nombre_suborigen','activo','id_origen_id')
 
-# class DestinoSerializer(serializers.HyperlinkedModelSerializer):
-#     id_proyecto_id = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
-#     class Meta:
-#         model = Destino
-#         fields = ('id','nombre_destino','nombre_propietario','rut_propietario','direccion','longitud','latitud','id_proyecto_id')
 
-# class MaterialSerializer(serializers.HyperlinkedModelSerializer):
-#     id_destino_id = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+# class AdministradorSerializer(serializers.ModelSerializer):
+#     # id_proyecto_id = serializers.RelatedField(source='id_proyecto', read_only=True)
 #     class Meta:
-#         model = Material
-#         fields = ('id','material','id_destino_id')
+#         model = Administrador
+#         fields = '__all__'
+#         # fields = ('id','url','username_admin','password_admin','id_proyecto_id')
+        
+# class DespachadorSerializer(serializers.ModelSerializer):
+#     # id_proyecto_id = serializers.RelatedField(source='id_proyecto', read_only=True)
+#     class Meta:
+#         model = Despachador
+#         fields = '__all__'
+#         # fields = ('id','rut_despachador','password_despachador','nombre_despachador',
+#         # 'apellido_despachador','telefono_despachador','id_proyecto_id')
 
-# class VoucherSerializer(serializers.HyperlinkedModelSerializer):
-#     id_despachador_id = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
-#     class Meta:
-#         model = Voucher
-#         fields = ('id','proyecto','nombre_cliente','rut_cliente','nombre_subcontratista','rut_subcontratista',
-#         'nombre_conductor_principal','apellido_conductor_principal','fecha','hora','patente','volumen','tipo_material',
-#         'punto_origen','punto_suborigen','punto_destino','contador_impresiones','id_despachador_id')
+
+
+
+class SubcontratistaSerializer(serializers.HyperlinkedModelSerializer):
+    # id_proyecto_id = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    class Meta:
+        model = Subcontratista
+        fields = '__all__'
+        # fields = ('id','url','rut','razon_social','nombre_subcontratista','nombre_contacto',
+        # 'apellido_contacto','email_contacto','telefono_contacto','id_proyecto_id')
+
+class CamionSerializer(serializers.HyperlinkedModelSerializer):
+    # id_subcontratista_id = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    class Meta:
+        model = Camion
+        fields = '__all__'
+        # fields = ('id','url','patente_camion','marca_camion','modelo_camion','capacidad_camion',
+        # 'nombre_conductor_principal','apellido_conductor_principal',
+        # 'telefono_conductor_principal','descripcion','QR','id_subcontratista_id')
+
+class OrigenSerializer(serializers.HyperlinkedModelSerializer):
+    # id_proyecto_id = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    class Meta:
+        model = Origen
+        fields = '__all__'
+        # fields = ('id','nombre_origen','longitud','latitud','id_proyecto_id')
+
+class SuborigenSerializer(serializers.HyperlinkedModelSerializer):
+    # id_origen_id = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    class Meta:
+        model = Suborigen
+        fields = '__all__'
+        # fields = ('id','nombre_suborigen','activo','id_origen_id')
+
+class DestinoSerializer(serializers.HyperlinkedModelSerializer):
+    # id_proyecto_id = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    class Meta:
+        model = Destino
+        fields = '__all__'
+        # fields = ('id','nombre_destino','nombre_propietario','rut_propietario','direccion','longitud','latitud','id_proyecto_id')
+
+class MaterialSerializer(serializers.HyperlinkedModelSerializer):
+    id_destino_id = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    class Meta:
+        model = Material
+        fields = '__all__'
+        # fields = ('id','material','id_destino_id')
+
+class VoucherSerializer(serializers.HyperlinkedModelSerializer):
+    # id_despachador_id = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    class Meta:
+        model = Voucher
+        fields = '__all__'
+        # fields = ('id','proyecto','nombre_cliente','rut_cliente','nombre_subcontratista','rut_subcontratista',
+        # 'nombre_conductor_principal','apellido_conductor_principal','fecha','hora','patente','volumen','tipo_material',
+        # 'punto_origen','punto_suborigen','punto_destino','contador_impresiones','id_despachador_id')
+
+
+
+
+
+
+
+
+
 
 
 

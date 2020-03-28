@@ -1,39 +1,329 @@
-#from django.shortcuts import render
-# from rest_framework import status
-# from rest_framework.decorators import action
-# from rest_framework.permissions import AllowAny
-# from rest_framework.response import Response
-from rest_framework.views import APIView
-# from rest_framework.renderers import JSONRenderer
-# from .renderers import UserJSONRenderer
-from rest_framework.response import Response
+##### Auth #####
+from django.shortcuts import render
+from datetime import datetime
+from django.contrib.auth import authenticate
+from django.contrib.auth.hashers import make_password
+from django.contrib.auth.signals import user_logged_in
+from django.core.exceptions import ObjectDoesNotExist
 
+from rest_framework import status
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateAPIView
+from rest_framework_jwt.utils import jwt_payload_handler
+
+from django.conf import settings
+import jwt
+################
+
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
 from rest_framework import viewsets
 from .serializers import *
 from .models import *
 
-# import requests
+# class SincronizacionDescarga(APIView):
+#     def get(self, request):
+#         # the many param informs the serializer that it will be serializing more than a single article.
+#         return Response(
+#             {
+#                 "id": 1,
+#                 "descarga":
+#                 [
+#                     {"longitud": "123.1313","latitud": "12.3454"},
+#                     {"patente": "XCVB23","marca":"scania"}
+#                 ]
+#             }
+#             )
 
-# req = requests.Request('POST','http://stackoverflow.com',headers={'X-Custom':'Test'},data='a=1&b=2')
-# prepared = req.prepare()
+class SincronizacionDescarga(APIView):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = DespachadorSerializer
+    def get(self, request):
+        serializerDespachador = self.serializer_class(request.user) 
+        queryproyecto = Proyecto.objects.get(id=serializerDespachador.data['proyecto'])
+        serializerProyecto = ProyectoSerializer(queryproyecto)
+        serializerProyecto.data['origen']= True
+        print(serializerProyecto.data)
+        descarga = {}
+        descarga['request']= True
+        descarga['data']= {
+            "id_despachador": serializerDespachador.data['id'],
+            "id_origenAsignado": serializerDespachador.data['origen_asignado'],
+            "dataproyecto": serializerProyecto.data
+        }
+        return Response(descarga, status=status.HTTP_200_OK)
 
-# def pretty_print_POST(req):
-#     """
-#     At this point it is completely built and ready
-#     to be fired; it is "prepared".
+# class SincronizacionDescarga(APIView):
+#     permission_classes = (IsAuthenticated,)
+#     def get_object(self, pk):
+#         try:
+#             return Despachador.objects.get(pk=pk)
+#         except Despachador.DoesNotExist:
+#             raise Http404
 
-#     However pay attention at the formatting used in 
-#     this function because it is programmed to be pretty 
-#     printed and may differ from the actual request.
-#     """
-#     print('{}\n{}\r\n{}\r\n\r\n{}'.format(
-#         '-----------START-----------',
-#         req.method + ' ' + req.url,
-#         '\r\n'.join('{}: {}'.format(k, v) for k, v in req.headers.items()),
-#         req.body,
-#     ))
+#     def get(self, request, pk):
+#         despachador = self.get_object(pk)
+#         origen = Origen.objects.all()
+#         suborigen = Suborigen.objects.all()
+#         destino = Destino.objects.all()
 
-# pretty_print_POST(prepared)
+#         material = Material.objects.all()
+#         subcontratista = Subcontratista.objects.all()
+#         camiones = Camion.objects.all()
+#         voucher = Voucher.objects.all() #filtrar: solo mostrar los del día
+#         #CodigoQR
+#         serializerDespachador = DespachadorSerializer(camiones, many=True)
+#         serializerOrigen = OrigenSerializer(origen, many=True)
+#         serializerSuborigen = SuborigenSerializer(camiones, many=True)
+#         serializerDestino = DestinoSerializer(origen, many=True)
+
+#         serializerMaterial = MaterialSerializer(camiones, many=True)
+#         serializerSubcontratista = SubcontratistaSerializer(origen, many=True)
+#         serializerCamion = CamionSerializer(camiones, many=True)
+#         serializerVoucher = VoucherSerializer(origen, many=True)
+#         # serializerCodigoQR = CodigoQRSerializer(origen, many=True)
+#         return Response([serializerCamion.data,serializerOrigen.data])
+
+        # user_details = {}
+        # user_details['request']= True
+        # user_details['data']= {
+        #     "id_despachador": id_despachador,
+        #     "id_origenAsignado": origen,
+        #     'proyecto': {
+        #         'centro_de_coste': centrodecoste,
+        #         'nombre_proyecto'
+        #         'origen':[
+        #             {
+        #                 'origen':origen,
+        #                 'suborigen':[
+        #                     {suborigen},
+        #                     {suborigen},
+        #                     {suborigen}
+        #                 ]
+        #             },
+        #             {
+        #                 'origen':origen,
+        #                 'suborigen':[
+        #                     {suborigen},
+        #                     {suborigen},
+        #                     {suborigen}
+        #                 ]
+        #             },
+        #         ],
+        #         'destino':[
+        #             {
+        #                 'id_destino':algo,
+        #                 'material':[
+        #                     {material},
+        #                     {material}
+        #                 ]
+        #             },
+        #             {
+        #                 'id_destino':algo,
+        #                 'material':[
+        #                     {material},
+        #                     {material}
+        #                 ]
+        #             }
+        #         ],
+        #         'subcontratista':[
+        #             camion:[
+        #                 codigoQR
+        #             ]
+        #         ]
+        #     }
+        # }
+
+
+
+class ProyectoViewSet(viewsets.ModelViewSet):
+    queryset = Proyecto.objects.all()
+    serializer_class = ProyectoSerializer
+
+
+# Registra un nuevo usuario
+class CreateUserAPIView(APIView):
+    permission_classes = (AllowAny,) # permitir que cualquier usuario (autenticado o no) acceda a esta URL.
+    def post(self, request):
+        user = request.data
+        print(user)
+        serializer = UserSerializer(data=user)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+# Registra un nuevo usuario Administrador
+class CreateAdminAPIView(APIView):
+    permission_classes = (AllowAny,) # permitir que cualquier usuario (autenticado o no) acceda a esta URL.
+    def post(self, request):
+        user = request.data
+        print(user)
+        serializer = AdministradorSerializer(data=user)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+# Registra un nuevo usuario Despachador
+class CreateDespAPIView(APIView):
+    permission_classes = (AllowAny,) # permitir que cualquier usuario (autenticado o no) acceda a esta URL.
+    def post(self, request):
+        user = request.data
+        print(user)
+        serializer = DespachadorSerializer(data=user)
+        serializer.is_valid(raise_exception=True)
+        # print (serializer.__dict__)
+        serializer.save() #el metodo .save del serializador llamará al metodo create cuando desee crear un objeto y al método update cuando desee actualizar.
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+
+# Obtener información de usuario o Actualizarlo (con token)
+class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
+    permission_classes = (IsAuthenticated,)# Allow only authenticated users to access this url
+    serializer_class = UserSerializer
+    def get(self, request, *args, **kwargs):
+        serializer = self.serializer_class(request.user) #serializador para manejar la conversión de nuestro objeto `Usuario` en algo que puede ser JSONified y enviado al cliente.
+        print(serializer)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def put(self, request, *args, **kwargs):
+        serializer_data = request.data.get('user', {})
+        serializer = UserSerializer(request.user, data=serializer_data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+# Login (Devuelve el Token)
+@api_view(['POST'])
+@permission_classes([AllowAny, ])
+def authenticate_user(request):
+    try:
+        rut = request.data['rut']
+        password = request.data['password']
+        # user = User.objects.get(rut=rut, password=password)
+        user = User.objects.get(rut=rut)
+        if user.check_password(password):
+            try:
+                payload = jwt_payload_handler(user)
+                token = jwt.encode(payload, settings.SECRET_KEY)
+                user_details = {}
+                user_details['request']= True
+                user_details['data']= [{'token': token}]
+                # user_details['name'] = "%s %s" % (user.first_name, user.last_name)
+                # user_details['token'] = token
+                user_logged_in.send(sender=user.__class__, request=request, user=user) # almacenamos el último tiempo de inicio de sesión del usuario con este código.
+                return Response(user_details, status=status.HTTP_200_OK)
+
+            except Exception as e:
+                raise e
+        else:
+            res = {'request': 'False', 'error': 'can not authenticate with the given credentials or the account has been deactivated'}
+            return Response(res, status=status.HTTP_403_FORBIDDEN)
+    except KeyError:
+        res = {'request': 'False', 'error': 'please provide a rut and a password'}
+        return Response(res)
+
+
+
+class SubcontratistaViewSet(viewsets.ModelViewSet):
+    permission_classes = (IsAuthenticated,)
+    queryset = Subcontratista.objects.all()
+    serializer_class = SubcontratistaSerializer
+
+class CamionViewSet(viewsets.ModelViewSet):
+    queryset = Camion.objects.all()
+    serializer_class = CamionSerializer
+
+class OrigenViewSet(viewsets.ModelViewSet):
+    queryset = Origen.objects.all()
+    serializer_class = OrigenSerializer
+
+class SuborigenViewSet(viewsets.ModelViewSet):
+    queryset = Suborigen.objects.all()
+    serializer_class = SuborigenSerializer
+
+class DestinoViewSet(viewsets.ModelViewSet):
+    queryset = Destino.objects.all()
+    serializer_class = DestinoSerializer
+
+class MaterialViewSet(viewsets.ModelViewSet):
+    queryset = Material.objects.all()
+    serializer_class = MaterialSerializer
+
+class VoucherViewSet(viewsets.ModelViewSet):
+    queryset = Voucher.objects.all()
+    serializer_class = VoucherSerializer
+
+
+
+# class Algo(APIView):
+
+#     def post(self, request, format=None):
+#         if(request.data['proyect_id']>0):
+#             adminregister=Administrador.objects.filter(proyecto=request.data['proyect_id'])
+#             if(len(adminregister)>0):
+#                 serializer=AdministradorSerializer(adminregister,many=True)
+#                 return Response(serializer.data)
+#             else:
+#                 return Response("No existen administradores en este proyecto")
+#         else:
+#             return Response("Proyecto no existe")
+
+# class Texto(APIView):
+#     def post(self,request):
+#         # serializer_context = {
+#         #     'request': request,
+#         # }
+#         if(request.data['proyect_id']>0):
+#             adminregister=Administrador.objects.all().filter(proyecto=request.data['proyect_id'])
+#             if(len(adminregister)>0):
+#                 serializer = AdministradorSerializer(adminregister, many=True)
+#                 return Response(serializer.data)
+#             else:
+#                 return Response("No existen administradores en este proyecto")
+#         else:
+#             return Response("Proyecto no existe")
+
+
+
+# class AdministradorTest(APIView):
+#     def post(self, request, format=None):
+#         print(request)
+#         serializer = AdministradorSerializer(data=request.data)
+#         serializer.save()
+#         return Response(request.POST)
+
+#     def get(self, request, format=None):
+#         queryset = Administrador.objects.all()
+#         serializer_class = AdministradorSerializer(queryset, many=True)
+#         return Response(serializer_class.data)
+
+# class AdministradorViewSet(viewsets.ModelViewSet):
+#     queryset = Administrador.objects.all()
+#     serializer_class = AdministradorSerializer
+
+
+# class DespachadorViewSet(viewsets.ModelViewSet):
+#     queryset = Despachador.objects.all()
+#     serializer_class = DespachadorSerializer
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # class SincronizacionDescarga(APIView):
 #     def get(self, request):
@@ -50,34 +340,37 @@ from .models import *
 #             )
 
 
-# class SincronizacionDescarga(APIView):
+
+
+
+    # def get(self, request):
+    #     if(request.data['id']>0):
+    #         query = Administrador.objects.all().filter = request.data['id']
+    #         serializerAdmin = AdministradorSerializer(query, many=True)
+    #         return Response([serializerAdmin.data])
+    #     else:
+    #         return Response("Proyecto no existe")
+    
+# class AlgoMas(APIView):
+#     def get_object(self, pk):
+#         try:
+#             return Administrador.objects.get(pk=pk)
+#         except Administrador.DoesNotExist:
+#             raise Http404
+
+#     # def get(self, request, pk, format=None):
+#     #     query = self.get_object(pk)
+#     #     serializer = AdministradorSerializer(query, many=True)
+#     #     return Response(serializer.data)
 #     def get(self, request):
-#         camiones = Camion.objects.all()
-#         origen = Origen.objects.all()
-#         serializerCamion = CamionSerializer(camiones, many=True)
-#         serializerOrigen = OrigenSerializer(origen, many=True)
-#         return Response([serializerCamion.data,serializerOrigen.data])
+#         query = Administrador.objects.all().filter(id=pk)
+#         serializerAdmin = AdministradorSerializer(query, many=True)
+#         return Response([serializerAdmin.data])
 
 
-class ProyectoViewSet(viewsets.ModelViewSet):
-    queryset = Proyecto.objects.all()
-    serializer_class = ProyectoSerializer
 
-class AdministradorTest(APIView):
-    def post(self, request, format=None):
-        print(request)
-        serializer = AdministradorSerializer(data=request.data)
-        serializer.save()
-        return Response(request.POST)
 
-    def get(self, request, format=None):
-        queryset = Administrador.objects.all()
-        serializer_class = AdministradorSerializer(queryset, many=True)
-        return Response(serializer_class.data)
 
-class AdministradorViewSet(viewsets.ModelViewSet):
-    queryset = Administrador.objects.all()
-    serializer_class = AdministradorSerializer
 
 #     def post(self, request, format=None):
 #         print(request)
@@ -89,37 +382,17 @@ class AdministradorViewSet(viewsets.ModelViewSet):
 
 
     
-class DespachadorViewSet(viewsets.ModelViewSet):
-    queryset = Despachador.objects.all()
-    serializer_class = DespachadorSerializer
 
-# class SubcontratistaViewSet(viewsets.ModelViewSet):
-#     queryset = Subcontratista.objects.all()
-#     serializer_class = SubcontratistaSerializer
 
-# class CamionViewSet(viewsets.ModelViewSet):
-#     queryset = Camion.objects.all()
-#     serializer_class = CamionSerializer
 
-# class OrigenViewSet(viewsets.ModelViewSet):
-#     queryset = Origen.objects.all()
-#     serializer_class = OrigenSerializer
 
-# class SuborigenViewSet(viewsets.ModelViewSet):
-#     queryset = Suborigen.objects.all()
-#     serializer_class = SuborigenSerializer
 
-# class DestinoViewSet(viewsets.ModelViewSet):
-#     queryset = Destino.objects.all()
-#     serializer_class = DestinoSerializer
 
-# class MaterialViewSet(viewsets.ModelViewSet):
-#     queryset = Material.objects.all()
-#     serializer_class = MaterialSerializer
 
-# class VoucherViewSet(viewsets.ModelViewSet):
-#     queryset = Voucher.objects.all()
-#     serializer_class = VoucherSerializer
+
+
+
+
 
 
 
