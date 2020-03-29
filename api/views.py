@@ -38,7 +38,7 @@ from .models import *
 #             )
 
 class SincronizacionDescarga(APIView):
-    permission_classes = (IsAuthenticated,)
+    # permission_classes = (IsAuthenticated,)
     serializer_class = DespachadorSerializer
     def get(self, request):
         serializerDespachador = self.serializer_class(request.user) 
@@ -139,7 +139,7 @@ class SincronizacionDescarga(APIView):
 
 
 class ProyectoViewSet(viewsets.ModelViewSet):
-    permission_classes = (IsAuthenticated,)
+    # permission_classes = (IsAuthenticated,)
     queryset = Proyecto.objects.all()
     serializer_class = ProyectoSerializer
 
@@ -161,9 +161,10 @@ class ProyectoViewSet(viewsets.ModelViewSet):
 class CreateAdminAPIView(APIView):
     # permission_classes = (IsAuthenticated,)
     permission_classes = (AllowAny,) # permitir que cualquier usuario (autenticado o no) acceda a esta URL.
+    serializer_class = AdministradorSerializer
     def post(self, request):
         user = request.data
-        serializer = AdministradorSerializer(data=user)
+        serializer = self.serializer_class(data=user)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         resp = {}
@@ -237,7 +238,7 @@ def authenticate_user(request):
 
 
 class SubcontratistaViewSet(viewsets.ModelViewSet):
-    permission_classes = (IsAuthenticated,)
+    # permission_classes = (IsAuthenticated,)
     queryset = Subcontratista.objects.all()
     serializer_class = SubcontratistaSerializer
 
