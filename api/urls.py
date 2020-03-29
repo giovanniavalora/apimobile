@@ -21,16 +21,17 @@ router.register(r'Suborigen', views.SuborigenViewSet)
 router.register(r'Destino', views.DestinoViewSet)
 router.register(r'Material', views.MaterialViewSet)
 router.register(r'Voucher', views.VoucherViewSet)
+router.register(r'CodigoQR', views.VoucherViewSet)
 # rouer.register(r'SincronizacionDescarga', SincronizacionDescarga.as_view())
 
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('crearUsuario/', CreateUserAPIView.as_view()),
+    # path('crearUsuario/', CreateUserAPIView.as_view()),
     path('crearAdministrador/', CreateAdminAPIView.as_view()),
     path('crearDespachador/', CreateDespAPIView.as_view()),
+    path('login/', authenticate_user),
     path('update/', UserRetrieveUpdateAPIView.as_view()),
-    path('obtain_token/', authenticate_user),
     path('SincronizacionDescarga/', SincronizacionDescarga.as_view()),
     # path('SincronizacionDescarga/<int:pk>/', SincronizacionDescarga.as_view()),
 

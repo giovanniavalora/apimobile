@@ -64,7 +64,7 @@ REST_FRAMEWORK = {
 JWT_AUTH = {
     'JWT_VERIFY': True,
     'JWT_VERIFY_EXPIRATION': True,
-    'JWT_EXPIRATION_DELTA': datetime.timedelta(seconds=3000),
+    'JWT_EXPIRATION_DELTA': datetime.timedelta(seconds=3000), #hours=12
     'JWT_AUTH_HEADER_PREFIX': 'Bearer',
 }
 # AUTH_USER_MODEL = 'api.User'
@@ -128,16 +128,6 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': os.path.join(BASE_DIR, 'ohlcamiones'),
-#         "USER":"ohl",
-#         "PASSWORD": "ohl",
-#         "HOST": "localhost",
-#         "PORT": "5432",
-#     }
-# }
 
 
 DATABASES = {
@@ -150,17 +140,6 @@ DATABASES = {
         "PORT": os.environ.get("SQL_PORT", "5432"),
     }
 }
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-#         'NAME': 'ohlcamiones',
-#         'USER': 'ohl',
-#         'PASSWORD': 'ohl',
-#         'HOST': 'db',
-#         'PORT': 5432,
-#     }
-# }
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators

@@ -21,8 +21,6 @@ class Proyecto(models.Model):
     def __str__(self):
         return self.centro_de_coste
 
-
-
 class UserManager(BaseUserManager):
     use_in_migrations = True
     def _create_user(self, rut, password, **extra_fields):
@@ -32,7 +30,6 @@ class UserManager(BaseUserManager):
             with transaction.atomic():
                 user = self.model(rut=rut, **extra_fields)
                 user.set_password(password)
-                print("Useeeeeeeeeeeeeeeeeeeeereerr!<----------------------iam here")
                 user.save(using=self._db)
                 return user
         except:
@@ -55,7 +52,6 @@ class AdminManager(BaseUserManager):
             with transaction.atomic():
                 user = self.model(rut=rut, **extra_fields)
                 user.set_password(password)
-                print("Administradooooooooooooooor!<----------------------iam here")
                 user.save(using=self._db)
                 return user
         except:
@@ -78,7 +74,6 @@ class DespManager(BaseUserManager):
             with transaction.atomic():
                 user = self.model(rut=rut, **extra_fields)
                 user.set_password(password)
-                print("Despachaadooooooooooooooor!<----------------------iam here")
                 user.save(using=self._db)
                 return user
         except:
@@ -123,6 +118,8 @@ class Administrador(User, PermissionsMixin):
     #     Administrador.objects.create_superuser(Administrador ,rut, password, *args, **kwargs)
     #     super(Administrador, self).save(*args, **kwargs)
     #     return self
+    class Meta:
+        verbose_name_plural = "Administradores"
 
 class Despachador(User, PermissionsMixin):
     telefono = models.CharField(max_length=30, blank=True)
@@ -136,32 +133,9 @@ class Despachador(User, PermissionsMixin):
     # def save(self, *args, **kwargs):
     #     super(Despachador, self).save(*args, **kwargs)
     #     return self
+    class Meta:
+        verbose_name_plural = "Despachadores"
 
-
-# class Administrador(models.Model):
-#     username_admin = models.CharField(max_length = 20, unique=True)
-#     password_admin = models.CharField(max_length=128)
-#     proyecto = models.ForeignKey(Proyecto, on_delete=models.CASCADE)
-
-#     def __str__(self):
-#         return self.username_admin
-
-#     class Meta:
-#         verbose_name_plural = "Administradores"
-
-# class Despachador(models.Model):
-#     rut_despachador = models.CharField(max_length = 20, unique=True)
-#     password_despachador = models.CharField(max_length=128)
-#     nombre_despachador = models.CharField(max_length = 50)
-#     apellido_despachador = models.CharField(max_length = 50)
-#     telefono_despachador = models.CharField(max_length = 20)
-#     proyecto = models.ForeignKey(Proyecto, on_delete=models.CASCADE)
-
-#     def __str__(self):
-#         return self.rut_despachador
-
-#     class Meta:
-#         verbose_name_plural = "Despachadores"
 
 class Voucher(models.Model):
     despachador = models.ForeignKey(Despachador, on_delete=models.CASCADE)
@@ -202,17 +176,23 @@ class Camion(models.Model):
     apellido_conductor_principal = models.CharField(max_length = 50)
     telefono_conductor_principal = models.CharField(max_length = 20)
     descripcion = models.CharField(max_length = 20)
+    class Meta:
+        verbose_name_plural = "Camiones"
 
 class Origen(models.Model):
     proyecto = models.ForeignKey(Proyecto, on_delete=models.CASCADE)
     nombre_origen = models.CharField(max_length = 100)
     longitud = models.CharField(max_length = 20)
     latitud = models.CharField(max_length = 20)
+    class Meta:
+        verbose_name_plural = "Origenes"
 
 class Suborigen(models.Model):
     origen = models.ForeignKey(Origen, on_delete=models.CASCADE)
     nombre_suborigen = models.CharField(max_length = 20)
     activo = models.BooleanField()
+    class Meta:
+        verbose_name_plural = "Sub-Origenes"
 
 class Destino(models.Model):
     proyecto = models.ForeignKey(Proyecto, on_delete=models.CASCADE)
@@ -226,10 +206,14 @@ class Destino(models.Model):
 class Material(models.Model):
     destino = models.ForeignKey(Destino, on_delete=models.CASCADE)
     material = models.CharField(max_length = 100)
+    class Meta:
+        verbose_name_plural = "Materiales"
 
 class CodigoQR(models.Model):
     camion = models.ForeignKey(Camion, on_delete=models.CASCADE)
     activo = models.BooleanField()
+    class Meta:
+        verbose_name_plural = "Codigos QR"
 
 
 
