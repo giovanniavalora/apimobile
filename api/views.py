@@ -243,30 +243,37 @@ class SubcontratistaViewSet(viewsets.ModelViewSet):
     serializer_class = SubcontratistaSerializer
 
 class CamionViewSet(viewsets.ModelViewSet):
+    # permission_classes = (IsAuthenticated,)
     queryset = Camion.objects.all()
     serializer_class = CamionSerializer
 
 class OrigenViewSet(viewsets.ModelViewSet):
+    # permission_classes = (IsAuthenticated,)
     queryset = Origen.objects.all()
     serializer_class = OrigenSerializer
 
 class SuborigenViewSet(viewsets.ModelViewSet):
+    # permission_classes = (IsAuthenticated,)
     queryset = Suborigen.objects.all()
     serializer_class = SuborigenSerializer
 
 class DestinoViewSet(viewsets.ModelViewSet):
+    # permission_classes = (IsAuthenticated,)
     queryset = Destino.objects.all()
     serializer_class = DestinoSerializer
 
 class MaterialViewSet(viewsets.ModelViewSet):
+    # permission_classes = (IsAuthenticated,)
     queryset = Material.objects.all()
     serializer_class = MaterialSerializer
 
 class VoucherViewSet(viewsets.ModelViewSet):
+    # permission_classes = (IsAuthenticated,)
     queryset = Voucher.objects.all()
     serializer_class = VoucherSerializer
 
 class codigoQRViewSet(viewsets.ModelViewSet):
+    permission_classes = (IsAuthenticated,)
     class Meta:
         model = CodigoQR
         fields = '__all__'
