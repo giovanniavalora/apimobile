@@ -107,7 +107,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         return self
 
 class Administrador(User, PermissionsMixin):
-    email = models.CharField(max_length=30, blank=True)
+    email = models.CharField(max_length=100, blank=True)
     
     objects = AdminManager()
     USERNAME_FIELD = 'rut'
@@ -152,7 +152,7 @@ class Voucher(models.Model):
     volumen = models.CharField(max_length = 20)
     tipo_material = models.CharField(max_length = 50)
     punto_origen = models.CharField(max_length = 100)
-    punto_suborigen = models.CharField(max_length = 100)
+    punto_suborigen = models.CharField(max_length = 100, blank=True)
     punto_destino = models.CharField(max_length = 100)
     contador_impresiones = models.IntegerField()
 

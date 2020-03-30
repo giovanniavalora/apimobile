@@ -37,105 +37,36 @@ from .models import *
 #             }
 #             )
 
-class SincronizacionDescarga(APIView):
-    # permission_classes = (IsAuthenticated,)
-    serializer_class = DespachadorSerializer
+class SincronizacionDescargaApiView(APIView):
+    permission_classes = (IsAuthenticated,)
     def get(self, request):
-        serializerDespachador = self.serializer_class(request.user) 
-        queryproyecto = Proyecto.objects.get(id=serializerDespachador.data['proyecto'])
-        serializerProyecto = ProyectoSerializer(queryproyecto)
+        serializerDespachador = DespachadorSerializer(request.user) 
+        id_despachador = serializerDespachador.data['id']
+        origen_asignado = serializerDespachador.data['origen_asignado']
+        id_proyecto = serializerDespachador.data['proyecto']
+
+        queryproyecto = Proyecto.objects.get(id=id_proyecto)
+        serializerProyecto = ProyectoAnidadoSerializer(queryproyecto)
+
+        queryvoucher = Voucher.objects.filter(despachador=id_despachador)
+        serializerVoucher = VoucherSerializer(queryvoucher, many=True)
+
         serializerProyecto.data['origen']= True
-        print(serializerProyecto.data)
         descarga = {}
         descarga['request']= True
         descarga['data']= {
-            "id_despachador": serializerDespachador.data['id'],
-            "id_origenAsignado": serializerDespachador.data['origen_asignado'],
-            "dataproyecto": serializerProyecto.data
+            "id_despachador": id_despachador,
+            "id_origenAsignado": origen_asignado,
+            "dataproyecto": serializerProyecto.data,
+            "voucher": serializerVoucher.data
         }
         return Response(descarga, status=status.HTTP_200_OK)
 
-# class SincronizacionDescarga(APIView):
-#     permission_classes = (IsAuthenticated,)
-#     def get_object(self, pk):
-#         try:
-#             return Despachador.objects.get(pk=pk)
-#         except Despachador.DoesNotExist:
-#             raise Http404
-#     def get(self, request, pk):
-#         despachador = self.get_object(pk)
-#         origen = Origen.objects.all()
-#         suborigen = Suborigen.objects.all()
-#         destino = Destino.objects.all()
 
-
-#         material = Material.objects.all()
-#         subcontratista = Subcontratista.objects.all()
-#         camiones = Camion.objects.all()
-#         voucher = Voucher.objects.all() #filtrar: solo mostrar los del día
-#         #CodigoQR
-#         serializerDespachador = DespachadorSerializer(camiones, many=True)
-#         serializerOrigen = OrigenSerializer(origen, many=True)
-#         serializerSuborigen = SuborigenSerializer(camiones, many=True)
-#         serializerDestino = DestinoSerializer(origen, many=True)
-
-#         serializerMaterial = MaterialSerializer(camiones, many=True)
-#         serializerSubcontratista = SubcontratistaSerializer(origen, many=True)
-#         serializerCamion = CamionSerializer(camiones, many=True)
-#         serializerVoucher = VoucherSerializer(origen, many=True)
-#         # serializerCodigoQR = CodigoQRSerializer(origen, many=True)
-#         return Response([serializerCamion.data,serializerOrigen.data])
-
-        # user_details = {}
-        # user_details['request']= True
-        # user_details['data']= {
-        #     "id_despachador": id_despachador,
-        #     "id_origenAsignado": origen,
-        #     'proyecto': {
-        #         'centro_de_coste': centrodecoste,
-        #         'nombre_proyecto'
-        #         'origen':[
-        #             {
-        #                 'origen':origen,
-        #                 'suborigen':[
-        #                     {suborigen},
-        #                     {suborigen},
-        #                     {suborigen}
-        #                 ]
-        #             },
-        #             {
-        #                 'origen':origen,
-        #                 'suborigen':[
-        #                     {suborigen},
-        #                     {suborigen},
-        #                     {suborigen}
-        #                 ]
-        #             },
-        #         ],
-        #         'destino':[
-        #             {
-        #                 'id_destino':algo,
-        #                 'material':[
-        #                     {material},
-        #                     {material}
-        #                 ]
-        #             },
-        #             {
-        #                 'id_destino':algo,
-        #                 'material':[
-        #                     {material},
-        #                     {material}
-        #                 ]
-        #             }
-        #         ],
-        #         'subcontratista':[
-        #             camion:[
-        #                 codigoQR
-        #             ]
-        #         ]
-        #     }
-        # }
-
+    
+# class SincDesc(RetrieveUpdateAPIView):
+#     serializer_class = ProyectoAnidadoSerializer
+#     queryset = Proyecto.objects.all()
 
 
 class ProyectoViewSet(viewsets.ModelViewSet):
@@ -144,7 +75,7 @@ class ProyectoViewSet(viewsets.ModelViewSet):
     serializer_class = ProyectoSerializer
 
 
-# Registra un nuevo usuario
+# Registra un nuevo usuario General (ni despachador ni administrador)
 # class CreateUserAPIView(APIView):
 #     # permission_classes = (IsAuthenticated,)
 #     permission_classes = (AllowAny,) # permitir que cualquier usuario (autenticado o no) acceda a esta URL.
@@ -191,7 +122,7 @@ class CreateDespAPIView(APIView):
 
 # Obtener información de usuario o Actualizarlo (con token)
 class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
-    permission_classes = (IsAuthenticated,)# Allow only authenticated users to access this url
+    # permission_classes = (IsAuthenticated,)# Allow only authenticated users to access this url
     serializer_class = UserSerializer
     def get(self, request, *args, **kwargs):
         serializer = self.serializer_class(request.user) #serializador para manejar la conversión de nuestro objeto `Usuario` en algo que puede ser JSONified y enviado al cliente.
@@ -272,11 +203,10 @@ class VoucherViewSet(viewsets.ModelViewSet):
     queryset = Voucher.objects.all()
     serializer_class = VoucherSerializer
 
-class codigoQRViewSet(viewsets.ModelViewSet):
+class CodigoQRViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticated,)
-    class Meta:
-        model = CodigoQR
-        fields = '__all__'
+    queryset = CodigoQR.objects.all()
+    serializer_class = VoucherSerializer
 
 
 
