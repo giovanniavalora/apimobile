@@ -12,6 +12,8 @@ class ProyectoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Proyecto
         fields = '__all__'
+        # fields = ('id','centro_de_coste','nombre_proyecto','ubicacion',
+        # 'cliente','rut_cliente','mandante','rut_mandante','mandante_final')
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -64,43 +66,76 @@ class DespachadorSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
-class SubcontratistaSerializer(serializers.HyperlinkedModelSerializer):
+class SubcontratistaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Subcontratista
         fields = '__all__'
 
-class CamionSerializer(serializers.HyperlinkedModelSerializer):
+class CamionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Camion
         fields = '__all__'
 
-class OrigenSerializer(serializers.HyperlinkedModelSerializer):
+class OrigenSerializer(serializers.ModelSerializer):
     class Meta:
         model = Origen
         fields = '__all__'
 
-class SuborigenSerializer(serializers.HyperlinkedModelSerializer):
+class SuborigenSerializer(serializers.ModelSerializer):
     class Meta:
         model = Suborigen
         fields = '__all__'
 
-class DestinoSerializer(serializers.HyperlinkedModelSerializer):
+class DestinoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Destino
         fields = '__all__'
 
-class MaterialSerializer(serializers.HyperlinkedModelSerializer):
+class MaterialSerializer(serializers.ModelSerializer):
     class Meta:
         model = Material
         fields = '__all__'
 
-class VoucherSerializer(serializers.HyperlinkedModelSerializer):
+class VoucherSerializer(serializers.ModelSerializer):
     class Meta:
         model = Voucher
         fields = '__all__'
 
-class codigoQRSerializer(serializers.HyperlinkedModelSerializer):
+class CodigoQRSerializer(serializers.ModelSerializer):
     class Meta:
         model = CodigoQR
+        fields = '__all__'
+
+
+
+
+##### Serializers anidados para el servicio Sincronización Descarga
+class CamionAnidadoSerializer(serializers.ModelSerializer):
+    codigoqr_set = CodigoQRSerializer(many=True, read_only=True)
+    class Meta:
+        model = Camion
+        fields = '__all__'
+class SubcontratistaAnidadoSerializer(serializers.ModelSerializer):
+    camion_set = CamionAnidadoSerializer(many=True, read_only=True)
+    class Meta:
+        model = Subcontratista
+        fields = '__all__'
+class DestinoAnidadoSerializer(serializers.ModelSerializer):
+    material_set = MaterialSerializer(many=True, read_only=True)
+    class Meta:
+        model = Destino
+        fields = '__all__'
+class OrigenAnidadoSerializer(serializers.ModelSerializer):
+    suborigen_set = SuborigenSerializer(many=True, read_only=True)
+    class Meta:
+        model = Origen
+        fields = '__all__'
+
+class ProyectoAnidadoSerializer(serializers.ModelSerializer):
+    origen_set = OrigenAnidadoSerializer(many=True, read_only=True)
+    destino_set = DestinoAnidadoSerializer(many=True, read_only=True)
+    subcontratista_set = SubcontratistaAnidadoSerializer(many=True, read_only=True)
+    class Meta:
+        model = Proyecto
         fields = '__all__'
 

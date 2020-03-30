@@ -21,7 +21,7 @@ router.register(r'Suborigen', views.SuborigenViewSet)
 router.register(r'Destino', views.DestinoViewSet)
 router.register(r'Material', views.MaterialViewSet)
 router.register(r'Voucher', views.VoucherViewSet)
-router.register(r'CodigoQR', views.VoucherViewSet)
+router.register(r'CodigoQR', views.CodigoQRViewSet)
 # rouer.register(r'SincronizacionDescarga', SincronizacionDescarga.as_view())
 
 
@@ -32,13 +32,10 @@ urlpatterns = [
     path('crearDespachador/', CreateDespAPIView.as_view()),
     path('login/', authenticate_user),
     path('update/', UserRetrieveUpdateAPIView.as_view()),
-    path('SincronizacionDescarga/', SincronizacionDescarga.as_view()),
+    path('SincronizacionDescarga/', SincronizacionDescargaApiView.as_view()),
+    # path('SincDesc/<int:pk>/', SincDesc.as_view()),
     # path('SincronizacionDescarga/<int:pk>/', SincronizacionDescarga.as_view()),
-
-    # path('AdministradorTest/', AdministradorTest.as_view()),
     # path('Texto/', Texto.as_view()),
-    # path('userlogin', UserLogin.as_view()),
-    # path('user-admin/', AdministradorRegistration.as_view()),
-    # path('user-desp/', DespachadorRegistration.as_view()),
+
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework'))
 ]
