@@ -149,6 +149,7 @@ class Voucher(models.Model):
     fecha = models.DateTimeField(auto_now_add=True)
     hora = models.DateTimeField(default=timezone.now)
     patente = models.CharField(max_length = 20)
+    foto_patente = models.FileField(blank=True)
     volumen = models.CharField(max_length = 20)
     tipo_material = models.CharField(max_length = 50)
     punto_origen = models.CharField(max_length = 100)

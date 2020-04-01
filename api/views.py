@@ -17,30 +17,41 @@ import jwt
 ################
 
 
+from rest_framework.parsers import MultiPartParser, FormParser #Para Subir imagen
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import viewsets
 from .serializers import *
 from .models import *
 
-# class SincronizacionDescarga(APIView):
-#     def get(self, request):
-#         # the many param informs the serializer that it will be serializing more than a single article.
-#         return Response(
-#             {
-#                 "id": 1,
-#                 "descarga":
-#                 [
-#                     {"longitud": "123.1313","latitud": "12.3454"},
-#                     {"patente": "XCVB23","marca":"scania"}
-#                 ]
-#             }
-#             )
+
+class IngresarDespachoApiView(APIView):
+    serializer_class = IngresarDespachoSerializer
+
+    def post(self, request, *args, **kwargs):
+        resp = {}
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        for objeto in serializer.data["vouchers"]:
+            parser_classes = (MultiPartParser, FormParser)
+            file_serializer = VoucherSerializer(data=objeto)
+            if file_serializer.is_valid():
+                file_serializer.save()
+            else:
+                resp['request']= False
+                resp['error'] = file_serializer.errors
+                return Response(resp, status=status.HTTP_201_CREATED)
+        resp['request']= True
+        resp['data'] = serializer.data
+        return Response(resp, status=status.HTTP_201_CREATED)
+
 
 class SincronizacionDescargaApiView(APIView):
     permission_classes = (IsAuthenticated,)
     def get(self, request):
         serializerDespachador = DespachadorSerializer(request.user) 
+        serializerDespachador.is_valid(raise_exception=True)
         id_despachador = serializerDespachador.data['id']
         origen_asignado = serializerDespachador.data['origen_asignado']
         id_proyecto = serializerDespachador.data['proyecto']
@@ -63,7 +74,6 @@ class SincronizacionDescargaApiView(APIView):
         return Response(descarga, status=status.HTTP_200_OK)
 
 
-    
 # class SincDesc(RetrieveUpdateAPIView):
 #     serializer_class = ProyectoAnidadoSerializer
 #     queryset = Proyecto.objects.all()
@@ -73,6 +83,47 @@ class ProyectoViewSet(viewsets.ModelViewSet):
     # permission_classes = (IsAuthenticated,)
     queryset = Proyecto.objects.all()
     serializer_class = ProyectoSerializer
+
+class SubcontratistaViewSet(viewsets.ModelViewSet):
+    # permission_classes = (IsAuthenticated,)
+    queryset = Subcontratista.objects.all()
+    serializer_class = SubcontratistaSerializer
+
+class CamionViewSet(viewsets.ModelViewSet):
+    # permission_classes = (IsAuthenticated,)
+    queryset = Camion.objects.all()
+    serializer_class = CamionSerializer
+
+class OrigenViewSet(viewsets.ModelViewSet):
+    # permission_classes = (IsAuthenticated,)
+    queryset = Origen.objects.all()
+    serializer_class = OrigenSerializer
+
+class SuborigenViewSet(viewsets.ModelViewSet):
+    # permission_classes = (IsAuthenticated,)
+    queryset = Suborigen.objects.all()
+    serializer_class = SuborigenSerializer
+
+class DestinoViewSet(viewsets.ModelViewSet):
+    # permission_classes = (IsAuthenticated,)
+    queryset = Destino.objects.all()
+    serializer_class = DestinoSerializer
+
+class MaterialViewSet(viewsets.ModelViewSet):
+    # permission_classes = (IsAuthenticated,)
+    queryset = Material.objects.all()
+    serializer_class = MaterialSerializer
+
+class VoucherViewSet(viewsets.ModelViewSet):
+    # permission_classes = (IsAuthenticated,)
+    queryset = Voucher.objects.all()
+    serializer_class = VoucherSerializer
+
+class CodigoQRViewSet(viewsets.ModelViewSet):
+    permission_classes = (IsAuthenticated,)
+    queryset = CodigoQR.objects.all()
+    serializer_class = VoucherSerializer
+
 
 
 # Registra un nuevo usuario General (ni despachador ni administrador)
@@ -119,7 +170,6 @@ class CreateDespAPIView(APIView):
         return Response(resp, status=status.HTTP_201_CREATED)
 
 
-
 # Obtener información de usuario o Actualizarlo (con token)
 class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
     # permission_classes = (IsAuthenticated,)# Allow only authenticated users to access this url
@@ -137,6 +187,7 @@ class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
         resp['request']= True
         resp['data']= serializer.data
         return Response(resp, status=status.HTTP_200_OK)
+
 
 # Login (Devuelve el Token)
 @api_view(['POST'])
@@ -160,53 +211,11 @@ def authenticate_user(request):
             except Exception as e:
                 raise e
         else:
-            res = {'request': 'False', 'error': 'can not authenticate with the given credentials or the account has been deactivated'}
+            res = {'request': False, 'error': 'can not authenticate with the given credentials or the account has been deactivated'}
             return Response(res, status=status.HTTP_403_FORBIDDEN)
     except KeyError:
-        res = {'request': 'False', 'error': 'please provide a rut and a password'}
+        res = {'request': False, 'error': 'please provide a rut and a password'}
         return Response(res)
-
-
-
-class SubcontratistaViewSet(viewsets.ModelViewSet):
-    # permission_classes = (IsAuthenticated,)
-    queryset = Subcontratista.objects.all()
-    serializer_class = SubcontratistaSerializer
-
-class CamionViewSet(viewsets.ModelViewSet):
-    # permission_classes = (IsAuthenticated,)
-    queryset = Camion.objects.all()
-    serializer_class = CamionSerializer
-
-class OrigenViewSet(viewsets.ModelViewSet):
-    # permission_classes = (IsAuthenticated,)
-    queryset = Origen.objects.all()
-    serializer_class = OrigenSerializer
-
-class SuborigenViewSet(viewsets.ModelViewSet):
-    # permission_classes = (IsAuthenticated,)
-    queryset = Suborigen.objects.all()
-    serializer_class = SuborigenSerializer
-
-class DestinoViewSet(viewsets.ModelViewSet):
-    # permission_classes = (IsAuthenticated,)
-    queryset = Destino.objects.all()
-    serializer_class = DestinoSerializer
-
-class MaterialViewSet(viewsets.ModelViewSet):
-    # permission_classes = (IsAuthenticated,)
-    queryset = Material.objects.all()
-    serializer_class = MaterialSerializer
-
-class VoucherViewSet(viewsets.ModelViewSet):
-    # permission_classes = (IsAuthenticated,)
-    queryset = Voucher.objects.all()
-    serializer_class = VoucherSerializer
-
-class CodigoQRViewSet(viewsets.ModelViewSet):
-    permission_classes = (IsAuthenticated,)
-    queryset = CodigoQR.objects.all()
-    serializer_class = VoucherSerializer
 
 
 

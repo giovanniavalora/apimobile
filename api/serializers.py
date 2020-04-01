@@ -96,16 +96,23 @@ class MaterialSerializer(serializers.ModelSerializer):
         model = Material
         fields = '__all__'
 
-class VoucherSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Voucher
-        fields = '__all__'
-
 class CodigoQRSerializer(serializers.ModelSerializer):
     class Meta:
         model = CodigoQR
         fields = '__all__'
 
+class VoucherSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Voucher
+        fields = '__all__'
+
+
+##### Serializers del servicio Ingresar Despacho
+class IngresarDespachoSerializer(serializers.Serializer):
+    vouchers = VoucherSerializer(many=True)
+    # class Meta:
+    #     model = Voucher
+    #     fields = '__all__'
 
 
 
