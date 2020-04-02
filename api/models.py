@@ -1,11 +1,11 @@
 from __future__ import unicode_literals
 from django.utils import timezone
+from datetime import datetime
 from django.db import transaction
 from django.contrib.auth.models import (AbstractBaseUser, PermissionsMixin, BaseUserManager)
 
 from django.db import models
-
-
+    
 
 
 class Proyecto(models.Model):
@@ -137,6 +137,13 @@ class Despachador(User, PermissionsMixin):
         verbose_name_plural = "Despachadores"
 
 
+
+def get_upload_path(instance, filename):
+    now = datetime.now()
+    return 'fotospatentes/{year}/{month}/{day}/user_{id_desp}/{fn}'.format(
+        year=now.strftime('%Y'), month=now.strftime('%m'), day=now.strftime('%d'),
+         id_desp=instance.despachador.id, fn=filename)
+
 class Voucher(models.Model):
     despachador = models.ForeignKey(Despachador, on_delete=models.CASCADE)
     proyecto = models.CharField(max_length = 100)
@@ -149,7 +156,8 @@ class Voucher(models.Model):
     fecha = models.DateTimeField(auto_now_add=True)
     hora = models.DateTimeField(default=timezone.now)
     patente = models.CharField(max_length = 20)
-    foto_patente = models.FileField(blank=True)
+    foto_patente = models.FileField(upload_to=get_upload_path, blank=True)
+    # foto_patente = models.FileField(upload_to='fotospatentes/%Y/%m/%d/', blank=True)
     volumen = models.CharField(max_length = 20)
     tipo_material = models.CharField(max_length = 50)
     punto_origen = models.CharField(max_length = 100)
