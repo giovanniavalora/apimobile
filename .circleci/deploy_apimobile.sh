@@ -1,5 +1,5 @@
 cd /home/ohl/controlCamionesApi/apimobile
-gitcheckout develop
+git checkout develop
 git pull
 cd /home/ohl/controlCamionesApi/
 docker-compose -f docker-compose.prod.yml up -d --build
