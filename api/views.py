@@ -49,29 +49,34 @@ class IngresarDespachoApiView(APIView):
 
 class SincronizacionDescargaApiView(APIView):
     permission_classes = (IsAuthenticated,)
+    descarga = {}
     def get(self, request):
         serializerDespachador = DespachadorSerializer(request.user) 
-        serializerDespachador.is_valid(raise_exception=True)
-        id_despachador = serializerDespachador.data['id']
-        origen_asignado = serializerDespachador.data['origen_asignado']
-        id_proyecto = serializerDespachador.data['proyecto']
+        if serializerDespachador.is_valid(raise_exception=True):
+            id_despachador = serializerDespachador.data['id']
+            origen_asignado = serializerDespachador.data['origen_asignado']
+            id_proyecto = serializerDespachador.data['proyecto']
 
-        queryproyecto = Proyecto.objects.get(id=id_proyecto)
-        serializerProyecto = ProyectoAnidadoSerializer(queryproyecto)
+            queryproyecto = Proyecto.objects.get(id=id_proyecto)
+            serializerProyecto = ProyectoAnidadoSerializer(queryproyecto)
 
-        queryvoucher = Voucher.objects.filter(despachador=id_despachador)
-        serializerVoucher = VoucherSerializer(queryvoucher, many=True)
+            queryvoucher = Voucher.objects.filter(despachador=id_despachador)
+            serializerVoucher = VoucherSerializer(queryvoucher, many=True)
 
-        serializerProyecto.data['origen']= True
-        descarga = {}
-        descarga['request']= True
-        descarga['data']= {
-            "id_despachador": id_despachador,
-            "id_origenAsignado": origen_asignado,
-            "dataproyecto": serializerProyecto.data,
-            "voucher": serializerVoucher.data
-        }
-        return Response(descarga, status=status.HTTP_200_OK)
+            serializerProyecto.data['origen']= True
+            descarga['request']= True
+            descarga['data']= {
+                "id_despachador": id_despachador,
+                "id_origenAsignado": origen_asignado,
+                "dataproyecto": serializerProyecto.data,
+                "voucher": serializerVoucher.data
+            }
+            return Response(descarga, status=status.HTTP_200_OK)
+        else:
+            descarga['request']= True
+            descarga['data']= serializerDespachador.errors
+            return Response(descarga, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 # class SincDesc(RetrieveUpdateAPIView):
@@ -147,12 +152,16 @@ class CreateAdminAPIView(APIView):
     def post(self, request):
         user = request.data
         serializer = self.serializer_class(data=user)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
         resp = {}
-        resp['request']= True
-        resp['data']= serializer.data
-        return Response(resp, status=status.HTTP_201_CREATED)
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+            resp['request']= True
+            resp['data']= serializer.data
+            return Response(resp, status=status.HTTP_201_CREATED)
+        else:
+            resp['request']= True
+            resp['data']= serializer.errors
+            return Response(resp, status=status.HTTP_400_BAD_REQUEST)
 
 
 # Registra un nuevo usuario Despachador
@@ -162,12 +171,16 @@ class CreateDespAPIView(APIView):
     def post(self, request):
         user = request.data
         serializer = DespachadorSerializer(data=user)
-        serializer.is_valid(raise_exception=True)
-        serializer.save() #el metodo .save del serializador llamará al metodo create cuando desee crear un objeto y al método update cuando desee actualizar.
         resp = {}
-        resp['request']= True
-        resp['data']= serializer.data
-        return Response(resp, status=status.HTTP_201_CREATED)
+        if serializer.is_valid(raise_exception=True):
+            serializer.save() #el metodo .save del serializador llamará al metodo create cuando desee crear un objeto y al método update cuando desee actualizar.
+            resp['request']= True
+            resp['data']= serializer.data
+            return Response(resp, status=status.HTTP_201_CREATED)
+        else:
+            resp['request']= False
+            resp['data']= serializer.errors
+            return Response(resp, status=status.HTTP_400_BAD_REQUEST)
 
 
 # Obtener información de usuario o Actualizarlo (con token)
@@ -181,12 +194,16 @@ class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
     def put(self, request, *args, **kwargs):
         serializer_data = request.data.get('user', {})
         serializer = UserSerializer(request.user, data=serializer_data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
         resp = {}
-        resp['request']= True
-        resp['data']= serializer.data
-        return Response(resp, status=status.HTTP_200_OK)
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+            resp['request']= True
+            resp['data']= serializer.data
+            return Response(resp, status=status.HTTP_200_OK)
+        else:
+            resp['request']= True
+            resp['data']= serializer.errors
+            return Response(resp, status=HTTP_400_BAD_REQUEST)
 
 
 # Login (Devuelve el Token)
@@ -200,7 +217,7 @@ def authenticate_user(request):
             user = User.objects.get(rut=rut)
         else:
             res = {'request': False, 'error': 'no puede autenticarse con las credenciales dadas o la cuenta ha sido desactivada'}
-            return Response(res)
+            return Response(res, status=status.HTTP_403_FORBIDDEN)
         if user.check_password(password):
             try:
                 payload = jwt_payload_handler(user)
@@ -218,7 +235,7 @@ def authenticate_user(request):
             return Response(res, status=status.HTTP_403_FORBIDDEN)
     except KeyError:
         res = {'request': False, 'error': 'por favor proporcione un rut y una password'}
-        return Response(res)
+        return Response(res, status=status.HTTP_403_FORBIDDEN)
     
 
 
