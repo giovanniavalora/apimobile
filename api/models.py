@@ -89,7 +89,7 @@ class DespManager(BaseUserManager):
 
 
 class User(AbstractBaseUser, PermissionsMixin):
-    rut = models.CharField(max_length=15, unique=True)    #rut
+    rut = models.CharField(max_length=15, unique=True) 
     nombre = models.CharField(max_length=30, blank=True)
     apellido = models.CharField(max_length=30, blank=True)
     is_active = models.BooleanField(default=True)

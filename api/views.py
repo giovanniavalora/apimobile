@@ -196,8 +196,11 @@ def authenticate_user(request):
     try:
         rut = request.data['rut']
         password = request.data['password']
-        # user = User.objects.get(rut=rut, password=password)
-        user = User.objects.get(rut=rut)
+        if User.objects.filter(rut=rut).exists():
+            user = User.objects.get(rut=rut)
+        else:
+            res = {'request': False, 'error': 'the username or password is not valid'}
+            return Response(res)
         if user.check_password(password):
             try:
                 payload = jwt_payload_handler(user)
@@ -216,6 +219,7 @@ def authenticate_user(request):
     except KeyError:
         res = {'request': False, 'error': 'please provide a rut and a password'}
         return Response(res)
+    
 
 
 
