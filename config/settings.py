@@ -36,7 +36,7 @@ AUTH_USER_MODEL = 'api.User'
 # Application definition
 
 INSTALLED_APPS = [
-    # 'corsheaders',
+    'corsheaders',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -96,7 +96,7 @@ JWT_AUTH = {
 # }
 
 MIDDLEWARE = [
-    # 'corsheaders.middleware.CorsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -106,7 +106,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-# CORS_ORIGIN_ALLOW_ALL =  True
+CORS_ORIGIN_ALLOW_ALL =  True
 
 ROOT_URLCONF = 'config.urls'
 
