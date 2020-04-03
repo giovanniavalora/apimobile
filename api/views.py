@@ -147,7 +147,7 @@ class CodigoQRViewSet(viewsets.ModelViewSet):
 # Registra un nuevo usuario Administrador
 class CreateAdminAPIView(APIView):
     # permission_classes = (IsAuthenticated,)
-    permission_classes = (AllowAny,) # permitir que cualquier usuario (autenticado o no) acceda a esta URL.
+    permission_classes = (AllowAny,)
     serializer_class = AdministradorSerializer
     def post(self, request):
         user = request.data
