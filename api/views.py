@@ -199,7 +199,7 @@ def authenticate_user(request):
         if User.objects.filter(rut=rut).exists():
             user = User.objects.get(rut=rut)
         else:
-            res = {'request': False, 'error': 'the username or password is not valid'}
+            res = {'request': False, 'error': 'no puede autenticarse con las credenciales dadas o la cuenta ha sido desactivada'}
             return Response(res)
         if user.check_password(password):
             try:
@@ -214,10 +214,10 @@ def authenticate_user(request):
             except Exception as e:
                 raise e
         else:
-            res = {'request': False, 'error': 'can not authenticate with the given credentials or the account has been deactivated'}
+            res = {'request': False, 'error': 'no puede autenticarse con las credenciales dadas o la cuenta ha sido desactivada'}
             return Response(res, status=status.HTTP_403_FORBIDDEN)
     except KeyError:
-        res = {'request': False, 'error': 'please provide a rut and a password'}
+        res = {'request': False, 'error': 'por favor proporcione un rut y una password'}
         return Response(res)
     
 
