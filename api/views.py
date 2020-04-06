@@ -26,6 +26,31 @@ from .serializers import *
 from .models import *
 
 
+class CambiarOrigenApiView(APIView):
+    permission_classes = (IsAuthenticated,)
+    # serializer_class = DespachadorSerializer
+    descarga = {}
+
+    def put(self, request):
+        despachador = Despachador.objects.get(pk=request.user)
+        print("\n",despachador)
+        # data = request.data.get('article')
+        # print("\n",despachador)
+        serializer = CambiarOrigenSerializer(despachador, data=request.data, partial=True)
+        print(serializer,"\n")
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        # snippet = self.get_object(pk)
+        # serializer = SnippetSerializer(snippet, data=request.data)
+        # if serializer.is_valid():
+        #     serializer.save()
+        #     return Response(serializer.data)
+        # return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 class IngresarDespachoApiView(APIView):
     serializer_class = IngresarDespachoSerializer
 
@@ -49,33 +74,33 @@ class IngresarDespachoApiView(APIView):
 
 class SincronizacionDescargaApiView(APIView):
     permission_classes = (IsAuthenticated,)
-    descarga = {}
+    
     def get(self, request):
         serializerDespachador = DespachadorSerializer(request.user) 
-        if serializerDespachador.is_valid(raise_exception=True):
-            id_despachador = serializerDespachador.data['id']
-            origen_asignado = serializerDespachador.data['origen_asignado']
-            id_proyecto = serializerDespachador.data['proyecto']
+        id_despachador = serializerDespachador.data['id']
+        origen_asignado = serializerDespachador.data['origen_asignado']
+        id_proyecto = serializerDespachador.data['proyecto']
 
-            queryproyecto = Proyecto.objects.get(id=id_proyecto)
-            serializerProyecto = ProyectoAnidadoSerializer(queryproyecto)
+        queryproyecto = Proyecto.objects.get(id=id_proyecto)
+        serializerProyecto = ProyectoAnidadoSerializer(queryproyecto)
 
-            queryvoucher = Voucher.objects.filter(despachador=id_despachador)
-            serializerVoucher = VoucherSerializer(queryvoucher, many=True)
+        queryvoucher = Voucher.objects.filter(despachador=id_despachador)
+        serializerVoucher = VoucherSerializer(queryvoucher, many=True)
 
-            serializerProyecto.data['origen']= True
-            descarga['request']= True
-            descarga['data']= {
-                "id_despachador": id_despachador,
-                "id_origenAsignado": origen_asignado,
-                "dataproyecto": serializerProyecto.data,
-                "voucher": serializerVoucher.data
-            }
-            return Response(descarga, status=status.HTTP_200_OK)
-        else:
-            descarga['request']= True
-            descarga['data']= serializerDespachador.errors
-            return Response(descarga, status=status.HTTP_400_BAD_REQUEST)
+
+        serializerProyecto.data['origen']= True
+        descarga = {}
+        descarga['request']= True
+        descarga['data']= {
+            "id_despachador": id_despachador,
+            "id_origenAsignado": origen_asignado,
+            "dataproyecto": serializerProyecto.data,
+            "voucher": serializerVoucher.data
+        }
+        return Response(descarga, status=status.HTTP_200_OK)
+        # descarga['request']= True
+        # descarga['data']= serializerDespachador.errors
+        # return Response(descarga, status=status.HTTP_400_BAD_REQUEST)
 
 
 
@@ -170,22 +195,21 @@ class CreateDespAPIView(APIView):
     permission_classes = (AllowAny,) # permitir que cualquier usuario (autenticado o no) acceda a esta URL.
     def post(self, request):
         user = request.data
-        serializer = DespachadorSerializer(data=user)
+        serializer= DespachadorSerializer(data=user)
         resp = {}
         if serializer.is_valid(raise_exception=True):
             serializer.save() #el metodo .save del serializador llamará al metodo create cuando desee crear un objeto y al método update cuando desee actualizar.
             resp['request']= True
             resp['data']= serializer.data
             return Response(resp, status=status.HTTP_201_CREATED)
-        else:
-            resp['request']= False
-            resp['data']= serializer.errors
-            return Response(resp, status=status.HTTP_400_BAD_REQUEST)
+        resp['request']= False
+        resp['data']= serializer.errors
+        return Response(resp, status=status.HTTP_400_BAD_REQUEST)
 
 
 # Obtener información de usuario o Actualizarlo (con token)
 class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
-    # permission_classes = (IsAuthenticated,)# Allow only authenticated users to access this url
+    permission_classes = (IsAuthenticated,)# Allow only authenticated users to access this url
     serializer_class = UserSerializer
     def get(self, request, *args, **kwargs):
         serializer = self.serializer_class(request.user) #serializador para manejar la conversión de nuestro objeto `Usuario` en algo que puede ser JSONified y enviado al cliente.
@@ -200,10 +224,9 @@ class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
             resp['request']= True
             resp['data']= serializer.data
             return Response(resp, status=status.HTTP_200_OK)
-        else:
-            resp['request']= True
-            resp['data']= serializer.errors
-            return Response(resp, status=HTTP_400_BAD_REQUEST)
+        resp['request']= True
+        resp['data']= serializer.errors
+        return Response(resp, status=HTTP_400_BAD_REQUEST)
 
 
 # Login (Devuelve el Token)

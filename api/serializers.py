@@ -27,6 +27,12 @@ class UserSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         return User.objects.create_user(**validated_data)
     def update(self, instance, validated_data):
+        instance.rut = validated_data.get('rut', instance.rut)
+        instance.set_password(validated_data.get('password', instance.password))
+        instance.nombre = validated_data.get('nombre', instance.nombre)
+        instance.apellido = validated_data.get('apellido', instance.apellido)
+        instance.is_active = validated_data.get('is_active', instance.is_active)
+        instance.proyecto_id = validated_data.get('proyecto_id', instance.proyecto_id)
         instance.save()
         return instance
 
@@ -41,10 +47,14 @@ class AdministradorSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         return Administrador.objects.create_superuser(**validated_data)
     def update(self, instance, validated_data):
-        instance.rut = validated_data.get('rut', instance.rut)
-        instance.nombre = validated_data.get('content', instance.nombre)
-        instance.apellido = validated_data.get('content', instance.apellido)
-        instance.proyecto = validated_data.get('created', instance.proyecto)
+        # instance.rut = validated_data.get('rut', instance.rut)
+        instance.set_password(validated_data.get('password', instance.password))
+        instance.email = validated_data.get('email', instance.email)
+        instance.nombre = validated_data.get('nombre', instance.nombre)
+        instance.apellido = validated_data.get('apellido', instance.apellido)
+        instance.is_active = validated_data.get('is_active', instance.is_active)
+        instance.proyecto_id = validated_data.get('proyecto_id', instance.proyecto_id)
+        # instance.proyecto = validated_data.get('created', instance.proyecto)
         instance.save()
         return instance
 
@@ -59,10 +69,14 @@ class DespachadorSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         return Despachador.objects.create_user(**validated_data)
     def update(self, instance, validated_data):
-        instance.rut = validated_data.get('rut', instance.rut)
-        instance.nombre = validated_data.get('content', instance.nombre)
-        instance.apellido = validated_data.get('content', instance.apellido)
-        instance.proyecto = validated_data.get('created', instance.proyecto)
+        # instance.rut = validated_data.get('rut', instance.rut)
+        instance.set_password(validated_data.get('password', instance.password))
+        instance.telefono = validated_data.get('telefono', instance.telefono)
+        instance.origen_asignado = validated_data.get('origen_asignado', instance.origen_asignado)
+        instance.apellido = validated_data.get('apellido', instance.apellido)
+        instance.is_active = validated_data.get('is_active', instance.is_active)
+        instance.proyecto_id = validated_data.get('proyecto_id', instance.proyecto_id)
+        # instance.proyecto = validated_data.get('created', instance.proyecto)
         instance.save()
         return instance
 
