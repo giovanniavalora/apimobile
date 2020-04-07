@@ -65,10 +65,16 @@ REST_FRAMEWORK = {
 JWT_AUTH = {
     'JWT_VERIFY': True,
     'JWT_VERIFY_EXPIRATION': True,
-    'JWT_EXPIRATION_DELTA': datetime.timedelta(hours=5), #seconds=60 hours=12 
+    'JWT_EXPIRATION_DELTA': datetime.timedelta(seconds=60), #seconds=60 hours=12 
     'JWT_AUTH_HEADER_PREFIX': 'Bearer',
 }
 # AUTH_USER_MODEL = 'api.User'
+
+# REST_FRAMEWORK = {
+#     'DEFAULT_PERMISSION_CLASSES': [
+#         'rest_framework.permissions.AllowAny',
+#     ]
+# }
 
 # REST_FRAMEWORK = {
 #   'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -77,8 +83,6 @@ JWT_AUTH = {
 #         'api.backends.JWTDespachadorAuthentication',
 #   )
 # }
-
-
 
 # REST_FRAMEWORK = {
 #     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -89,11 +93,7 @@ JWT_AUTH = {
 #     )
 # }
 
-# REST_FRAMEWORK = {
-#     'DEFAULT_PERMISSION_CLASSES': [
-#         'rest_framework.permissions.AllowAny',
-#     ]
-# }
+
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',

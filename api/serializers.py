@@ -160,3 +160,20 @@ class ProyectoAnidadoSerializer(serializers.ModelSerializer):
         model = Proyecto
         fields = '__all__'
 
+
+
+##### Serializers anidados para el servicio Cambiar Origen
+class CambiarOrigenSerializer(serializers.ModelSerializer):
+    date_joined = serializers.ReadOnlyField()
+    is_staff = serializers.BooleanField(read_only=True)
+    is_superuser = serializers.BooleanField(read_only=True)
+    class Meta(object):
+        model = Despachador
+        fields = '__all__'
+        extra_kwargs = {'password': {'write_only': True}}
+    def create(self, validated_data):
+        return Despachador.objects.create_user(**validated_data)
+    def update(self, instance, validated_data):
+        instance.origen_asignado = validated_data.get('origen_asignado', instance.origen_asignado)
+        instance.save()
+        return instance

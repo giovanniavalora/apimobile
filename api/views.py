@@ -8,7 +8,7 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateAPIView
 from rest_framework_jwt.utils import jwt_payload_handler
 
@@ -231,7 +231,8 @@ class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
 
 # Login (Devuelve el Token)
 @api_view(['POST'])
-@permission_classes([AllowAny, ])
+@authentication_classes([])
+@permission_classes([])
 def authenticate_user(request):
     try:
         rut = request.data['rut']

@@ -17,6 +17,7 @@ class Proyecto(models.Model):
     mandante = models.CharField(max_length = 100)
     rut_mandante = models.CharField(max_length = 20)
     mandante_final = models.CharField(max_length = 100)
+    cantidad_voucher_imprimir = models.IntegerField(blank=True)
 
     def __str__(self):
         return self.centro_de_coste
@@ -138,7 +139,7 @@ class Despachador(User, PermissionsMixin):
 
 
 
-def get_upload_path(instance, filename):
+def get_upload_path_patente(instance, filename):
     now = datetime.now()
     return 'fotospatentes/{year}/{month}/{day}/user_{id_desp}/{fn}'.format(
         year=now.strftime('%Y'), month=now.strftime('%m'), day=now.strftime('%d'),
@@ -156,7 +157,7 @@ class Voucher(models.Model):
     fecha = models.DateTimeField(auto_now_add=True)
     hora = models.DateTimeField(default=timezone.now)
     patente = models.CharField(max_length = 20)
-    foto_patente = models.FileField(upload_to=get_upload_path, blank=True)
+    foto_patente = models.FileField(upload_to=get_upload_path_patente, blank=True)
     # foto_patente = models.FileField(upload_to='fotospatentes/%Y/%m/%d/', blank=True)
     volumen = models.CharField(max_length = 20)
     tipo_material = models.CharField(max_length = 50)
@@ -164,6 +165,9 @@ class Voucher(models.Model):
     punto_suborigen = models.CharField(max_length = 100, blank=True)
     punto_destino = models.CharField(max_length = 100)
     contador_impresiones = models.IntegerField()
+    def __str__(self):
+        cadena = "voucher_"+str(self.id)+" "+self.despachador
+        return cadena
 
 class Subcontratista(models.Model):
     proyecto = models.ForeignKey(Proyecto, on_delete=models.CASCADE)
@@ -174,7 +178,15 @@ class Subcontratista(models.Model):
     apellido_contacto = models.CharField(max_length = 50)
     email_contacto = models.CharField(max_length = 100, blank=True, default='')
     telefono_contacto = models.CharField(max_length = 20)
+    def __str__(self):
+        return self.razon_social+" "+self.rut
 
+
+def get_upload_path_camion(instance, filename):
+    now = datetime.now()
+    return 'fotoscamiones/{year}/{month}/{day}/user_{id_desp}/{fn}'.format(
+        year=now.strftime('%Y'), month=now.strftime('%m'), day=now.strftime('%d'),
+         id_desp=instance.despachador.id, fn=filename)
 class Camion(models.Model):
     subcontratista = models.ForeignKey(Subcontratista, on_delete=models.CASCADE)
     patente_camion = models.CharField(max_length = 20)
@@ -185,6 +197,12 @@ class Camion(models.Model):
     apellido_conductor_principal = models.CharField(max_length = 50)
     telefono_conductor_principal = models.CharField(max_length = 20)
     descripcion = models.CharField(max_length = 20)
+    numero_ejes = models.CharField(max_length = 5)
+    unidad_medida = models.CharField(max_length = 5)
+    color_camion = models.CharField(max_length = 20)
+    # foto_camion = models.FileField(upload_to=get_upload_path_camion, blank=True)
+    def __str__(self):
+        return self.patente_camion+" "+self.marca_camion+" "+self.modelo_camion
     class Meta:
         verbose_name_plural = "Camiones"
 
@@ -193,12 +211,14 @@ class Origen(models.Model):
     nombre_origen = models.CharField(max_length = 100)
     longitud = models.CharField(max_length = 20)
     latitud = models.CharField(max_length = 20)
+    def __str__(self):
+        return self.nombre_origen
     class Meta:
         verbose_name_plural = "Origenes"
 
 class Suborigen(models.Model):
     origen = models.ForeignKey(Origen, on_delete=models.CASCADE)
-    nombre_suborigen = models.CharField(max_length = 20)
+    nombre_suborigen = models.CharField(max_length = 100)
     activo = models.BooleanField()
     class Meta:
         verbose_name_plural = "Sub-Origenes"
