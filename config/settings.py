@@ -65,7 +65,7 @@ REST_FRAMEWORK = {
 JWT_AUTH = {
     'JWT_VERIFY': True,
     'JWT_VERIFY_EXPIRATION': True,
-    'JWT_EXPIRATION_DELTA': datetime.timedelta(seconds=60), #seconds=60 hours=12 
+    'JWT_EXPIRATION_DELTA': datetime.timedelta(hours=12), #seconds=60 hours=12 
     'JWT_AUTH_HEADER_PREFIX': 'Bearer',
 }
 # AUTH_USER_MODEL = 'api.User'
