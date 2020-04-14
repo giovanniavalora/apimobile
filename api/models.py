@@ -5,7 +5,10 @@ from django.db import transaction
 from django.contrib.auth.models import (AbstractBaseUser, PermissionsMixin, BaseUserManager)
 
 from django.db import models
-    
+
+import pytz
+utc=pytz.UTC
+timezone.localtime(timezone.now())
 
 
 class Proyecto(models.Model):
@@ -17,11 +20,110 @@ class Proyecto(models.Model):
     mandante = models.CharField(max_length = 100)
     rut_mandante = models.CharField(max_length = 20)
     mandante_final = models.CharField(max_length = 100)
-    cantidad_voucher_imprimir = models.IntegerField(blank=True)
+    cantidad_voucher_imprimir = models.IntegerField(blank=True, default=1)
 
     def __str__(self):
         return self.centro_de_coste
 
+
+class Subcontratista(models.Model):
+    proyecto = models.ForeignKey(Proyecto, on_delete=models.CASCADE)
+    rut = models.CharField(max_length = 20)
+    razon_social = models.CharField(max_length = 100)
+    nombre_subcontratista = models.CharField(max_length = 100)
+    nombre_contacto = models.CharField(max_length = 50)
+    apellido_contacto = models.CharField(max_length = 50)
+    email_contacto = models.CharField(max_length = 100, blank=True, default='')
+    telefono_contacto = models.CharField(max_length = 20)
+    def __str__(self):
+        return self.razon_social+" "+self.rut
+
+
+def get_upload_path_camion(instance, filename):
+    now = datetime.now()
+    return 'fotoscamiones/{year}/{month}/{day}/user_{id_desp}/{fn}'.format(
+        year=now.strftime('%Y'), month=now.strftime('%m'), day=now.strftime('%d'),
+         id_desp=instance.despachador.id, fn=filename)
+
+class Camion(models.Model):
+    UNIDADES = [
+        ('m3','m3'),
+        ('ton','ton')
+    ]
+    subcontratista = models.ForeignKey(Subcontratista, on_delete=models.CASCADE)
+    patente_camion = models.CharField(max_length = 20)
+    marca_camion = models.CharField(max_length = 20)
+    modelo_camion = models.CharField(max_length = 20)
+    capacidad_camion = models.CharField(max_length = 20)
+    nombre_conductor_principal = models.CharField(max_length = 50)
+    apellido_conductor_principal = models.CharField(max_length = 50)
+    telefono_conductor_principal = models.CharField(max_length = 20)
+    descripcion = models.CharField(max_length = 20)
+    numero_ejes = models.CharField(max_length = 5)
+    unidad_medida = models.CharField(max_length = 5, choices=UNIDADES)
+    color_camion = models.CharField(max_length = 20)
+    # foto_camion = models.FileField(upload_to=get_upload_path_camion, blank=True)
+    def __str__(self):
+        return self.patente_camion+" "+self.marca_camion+" "+self.modelo_camion
+    class Meta:
+        verbose_name_plural = "Camiones"
+
+
+class Origen(models.Model):
+    proyecto = models.ForeignKey(Proyecto, on_delete=models.CASCADE)
+    nombre_origen = models.CharField(max_length = 100)
+    longitud = models.CharField(max_length = 20)
+    latitud = models.CharField(max_length = 20)
+    def __str__(self):
+        return self.nombre_origen
+    class Meta:
+        verbose_name_plural = "Origenes"
+
+
+class Suborigen(models.Model):
+    origen = models.ForeignKey(Origen, on_delete=models.CASCADE)
+    nombre_suborigen = models.CharField(max_length = 100)
+    activo = models.BooleanField(default=True)
+    def __str__(self):
+        return self.nombre_suborigen+" perteneciente al origen: "+str(self.origen)
+    class Meta:
+        verbose_name_plural = "Sub-Origenes"
+
+
+class Destino(models.Model):
+    proyecto = models.ForeignKey(Proyecto, on_delete=models.CASCADE)
+    nombre_destino = models.CharField(max_length = 100)
+    nombre_propietario = models.CharField(max_length = 100)
+    rut_propietario = models.CharField(max_length = 20)
+    direccion = models.CharField(max_length = 100)
+    longitud = models.CharField(max_length = 20)
+    latitud = models.CharField(max_length = 20)
+    def __str__(self):
+        return str(self.id)+" "+self.nombre_destino
+
+
+class Material(models.Model):
+    destino = models.ForeignKey(Destino, on_delete=models.CASCADE)
+    material = models.CharField(max_length = 100)
+    def __str__(self):
+        return str(self.id)+" "+self.material
+    class Meta:
+        verbose_name_plural = "Materiales"
+
+
+class CodigoQR(models.Model):
+    camion = models.ForeignKey(Camion, on_delete=models.CASCADE)
+    activo = models.BooleanField()
+    def __str__(self):
+        return str(self.id)+" "+str(self.activo)
+    class Meta:
+        verbose_name_plural = "Codigos QR"
+
+
+
+
+
+##### Usuarios #####
 class UserManager(BaseUserManager):
     use_in_migrations = True
     def _create_user(self, rut, password, **extra_fields):
@@ -91,8 +193,8 @@ class DespManager(BaseUserManager):
 
 class User(AbstractBaseUser, PermissionsMixin):
     rut = models.CharField(max_length=15, unique=True) 
-    nombre = models.CharField(max_length=30, blank=True)
-    apellido = models.CharField(max_length=30, blank=True)
+    nombre = models.CharField(max_length=30)
+    apellido = models.CharField(max_length=30)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     date_joined = models.DateTimeField(default=timezone.now)
@@ -136,7 +238,24 @@ class Despachador(User, PermissionsMixin):
     #     return self
     class Meta:
         verbose_name_plural = "Despachadores"
+##### fin usuarios #####
 
+
+
+
+
+def fin_origen_temporal():
+    return timezone.now() + timezone.timedelta(hours=12)
+class OrigenTemporal(models.Model):
+    despachador = models.ForeignKey(Despachador, on_delete=models.CASCADE)
+    id_origen = models.IntegerField()
+    timestamp_inicio = models.DateTimeField(default=timezone.now)
+    duracion = models.IntegerField(default=12)
+    activo  = models.BooleanField(default=True)
+    def __str__(self):
+        return str(self.id_origen)
+    class Meta:
+        verbose_name_plural = "Origenes"
 
 
 def get_upload_path_patente(instance, filename):
@@ -144,11 +263,10 @@ def get_upload_path_patente(instance, filename):
     return 'fotospatentes/{year}/{month}/{day}/user_{id_desp}/{fn}'.format(
         year=now.strftime('%Y'), month=now.strftime('%m'), day=now.strftime('%d'),
          id_desp=instance.despachador.id, fn=filename)
-
 class Voucher(models.Model):
     despachador = models.ForeignKey(Despachador, on_delete=models.CASCADE)
     proyecto = models.CharField(max_length = 100)
-    nombre_cliente = models.CharField(max_length = 50)
+    nombre_cliente = models.CharField(max_length = 100)
     rut_cliente = models.CharField(max_length = 20)
     nombre_subcontratista = models.CharField(max_length = 100)
     rut_subcontratista = models.CharField(max_length = 20)
@@ -168,88 +286,4 @@ class Voucher(models.Model):
     def __str__(self):
         cadena = "voucher_"+str(self.id)+" "+self.despachador
         return cadena
-
-class Subcontratista(models.Model):
-    proyecto = models.ForeignKey(Proyecto, on_delete=models.CASCADE)
-    rut = models.CharField(max_length = 20)
-    razon_social = models.CharField(max_length = 100)
-    nombre_subcontratista = models.CharField(max_length = 100)
-    nombre_contacto = models.CharField(max_length = 50)
-    apellido_contacto = models.CharField(max_length = 50)
-    email_contacto = models.CharField(max_length = 100, blank=True, default='')
-    telefono_contacto = models.CharField(max_length = 20)
-    def __str__(self):
-        return self.razon_social+" "+self.rut
-
-
-def get_upload_path_camion(instance, filename):
-    now = datetime.now()
-    return 'fotoscamiones/{year}/{month}/{day}/user_{id_desp}/{fn}'.format(
-        year=now.strftime('%Y'), month=now.strftime('%m'), day=now.strftime('%d'),
-         id_desp=instance.despachador.id, fn=filename)
-class Camion(models.Model):
-    subcontratista = models.ForeignKey(Subcontratista, on_delete=models.CASCADE)
-    patente_camion = models.CharField(max_length = 20)
-    marca_camion = models.CharField(max_length = 20)
-    modelo_camion = models.CharField(max_length = 20)
-    capacidad_camion = models.CharField(max_length = 20)
-    nombre_conductor_principal = models.CharField(max_length = 50)
-    apellido_conductor_principal = models.CharField(max_length = 50)
-    telefono_conductor_principal = models.CharField(max_length = 20)
-    descripcion = models.CharField(max_length = 20)
-    numero_ejes = models.CharField(max_length = 5)
-    unidad_medida = models.CharField(max_length = 5)
-    color_camion = models.CharField(max_length = 20)
-    # foto_camion = models.FileField(upload_to=get_upload_path_camion, blank=True)
-    def __str__(self):
-        return self.patente_camion+" "+self.marca_camion+" "+self.modelo_camion
-    class Meta:
-        verbose_name_plural = "Camiones"
-
-class Origen(models.Model):
-    proyecto = models.ForeignKey(Proyecto, on_delete=models.CASCADE)
-    nombre_origen = models.CharField(max_length = 100)
-    longitud = models.CharField(max_length = 20)
-    latitud = models.CharField(max_length = 20)
-    def __str__(self):
-        return self.nombre_origen
-    class Meta:
-        verbose_name_plural = "Origenes"
-
-class Suborigen(models.Model):
-    origen = models.ForeignKey(Origen, on_delete=models.CASCADE)
-    nombre_suborigen = models.CharField(max_length = 100)
-    activo = models.BooleanField()
-    class Meta:
-        verbose_name_plural = "Sub-Origenes"
-
-class Destino(models.Model):
-    proyecto = models.ForeignKey(Proyecto, on_delete=models.CASCADE)
-    nombre_destino = models.CharField(max_length = 100)
-    nombre_propietario = models.CharField(max_length = 100)
-    rut_propietario = models.CharField(max_length = 20)
-    direccion = models.CharField(max_length = 100)
-    longitud = models.CharField(max_length = 20)
-    latitud = models.CharField(max_length = 20)
-
-class Material(models.Model):
-    destino = models.ForeignKey(Destino, on_delete=models.CASCADE)
-    material = models.CharField(max_length = 100)
-    class Meta:
-        verbose_name_plural = "Materiales"
-
-class CodigoQR(models.Model):
-    camion = models.ForeignKey(Camion, on_delete=models.CASCADE)
-    activo = models.BooleanField()
-    class Meta:
-        verbose_name_plural = "Codigos QR"
-
-
-
-
-
-
-
-
-
 

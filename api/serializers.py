@@ -115,6 +115,12 @@ class CodigoQRSerializer(serializers.ModelSerializer):
         model = CodigoQR
         fields = '__all__'
 
+class OrigenTemporalSerializer(serializers.ModelSerializer):
+    timestamp_inicio = serializers.ReadOnlyField()
+    class Meta:
+        model = OrigenTemporal
+        fields = '__all__'
+
 class VoucherSerializer(serializers.ModelSerializer):
     class Meta:
         model = Voucher

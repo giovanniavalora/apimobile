@@ -16,6 +16,7 @@ from django.conf import settings
 import jwt
 ################
 
+import threading
 
 from rest_framework.parsers import MultiPartParser, FormParser #Para Subir imagen
 
@@ -25,30 +26,79 @@ from rest_framework import viewsets
 from .serializers import *
 from .models import *
 
+from django.core.mail import EmailMultiAlternatives
+import smtplib
+
+from django.utils import timezone
+import pytz
+# utc=pytz.UTC
+# timezone.activate(settings.TIME_ZONE)
+# timezone.localtime(timezone.now())
+
+
+def cambio_origen_mail(despachador,origen,id_origentemporal):
+    try: 
+        # Se obtiene el origen asignado oficial (si es que existe)
+        origenasignado = Origen.objects.get(pk=despachador.origen_asignado)
+        origentemporal = OrigenTemporal.objects.get(pk=id_origentemporal)
+        inicio = origentemporal.timestamp_inicio
+        duracion = timezone.timedelta(minutes=origentemporal.duracion)
+        administrador = Administrador.objects.filter(proyecto=despachador.proyecto, is_superuser=True)
+        
+
+        subject = '[Cambio Origen - '+origen.nombre_origen+'] '+despachador.nombre+' '+despachador.apellido
+        message = despachador.nombre+' '+despachador.apellido+'\n\n'
+        message = message+'Origen asignado: '+origenasignado.nombre_origen+'\n'
+        message = message+'Origen temporal: '+origen.nombre_origen+'\n\n'
+        message = message+'Inicio: '+str(inicio)+'\n'
+        message = message+'Fin: '+str(inicio+duracion)
+
+        message = 'Subject: {}\n\n{}'.format(subject,message)
+
+        server = smtplib.SMTP(settings.EMAIL_HOST,settings.EMAIL_PORT)
+        server.starttls()
+        server.login(settings.EMAIL_HOST_USER,settings.EMAIL_HOST_PASSWORD)
+        # Obtener los mails de todos los admin del proyecto al que corresponde el despachador
+        for admin in administrador:
+            server.sendmail(settings.EMAIL_HOST_USER,admin.email,message)
+            print("[Cambio de origen] correo enviado a ",admin.email)
+        server.quit()
+        
+    except smtplib.SMTPRecipientsRefused as e:
+        print('got SMTPRecipientsRefused', file=DEBUGSTREAM)
+        raise e.recipients
+    except Exception as e:
+        raise e
+
 
 class CambiarOrigenApiView(APIView):
     permission_classes = (IsAuthenticated,)
     # serializer_class = DespachadorSerializer
-    descarga = {}
 
     def put(self, request):
         despachador = Despachador.objects.get(pk=request.user)
-        print("\n",despachador)
-        # data = request.data.get('article')
-        # print("\n",despachador)
-        serializer = CambiarOrigenSerializer(despachador, data=request.data, partial=True)
-        print(serializer,"\n")
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        # snippet = self.get_object(pk)
-        # serializer = SnippetSerializer(snippet, data=request.data)
-        # if serializer.is_valid():
-        #     serializer.save()
-        #     return Response(serializer.data)
-        # return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        # Si ya existe un origen Temporal para el usuario se desactivará 
+        if OrigenTemporal.objects.filter(despachador_id=despachador.id, activo=True).exists():
+            origentemporal = OrigenTemporal.objects.get(despachador_id=despachador.id, activo=True)
+            req = {'activo':False}
+            serializer = OrigenTemporalSerializer(origentemporal, data=req, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+
+        # Se obtiene el origen al que se quiere cambiar (si es que existe)
+        origen = Origen.objects.get(pk=request.data['id_origen'])
+        req = {}
+        req['despachador'] = despachador.id
+        req['id_origen'] = origen.id
+        serializerOT = OrigenTemporalSerializer(data=req, partial=True)
+        if serializerOT.is_valid():
+            serializerOT.save()
+            # se envía un mail a cada administrador del proyecto informando el cambio
+            thread = threading.Thread(target=cambio_origen_mail, args=(despachador,origen,serializerOT.data['id']))
+            thread.start()
+            return Response(serializerOT.data)
+        return Response(serializerOT.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class IngresarDespachoApiView(APIView):
@@ -76,10 +126,36 @@ class SincronizacionDescargaApiView(APIView):
     permission_classes = (IsAuthenticated,)
     
     def get(self, request):
-        serializerDespachador = DespachadorSerializer(request.user) 
-        id_despachador = serializerDespachador.data['id']
-        origen_asignado = serializerDespachador.data['origen_asignado']
-        id_proyecto = serializerDespachador.data['proyecto']
+        despachador = Despachador.objects.get(rut=request.user)
+        id_despachador = despachador.id
+        id_proyecto = despachador.proyecto_id
+        # origen_asignado = despachador.origen_asignado
+
+        # serializerDespachador = DespachadorSerializer(despachador) 
+        # id_despachador = serializerDespachador.data['id']
+        # id_proyecto = serializerDespachador.data['proyecto']
+
+        #Origen Asignado
+        if OrigenTemporal.objects.filter(despachador_id=id_despachador, activo=True).exists():
+            origentemporal = OrigenTemporal.objects.get(despachador_id=id_despachador, activo=True)
+            inicio = origentemporal.timestamp_inicio
+            duracion = timezone.timedelta(minutes=origentemporal.duracion)
+            print(inicio + duracion)
+            print(timezone.now())
+            if (inicio + duracion) < timezone.now():
+                serializer = OrigenTemporalSerializer(origentemporal, data={'activo':False}, partial=True)
+                if serializer.is_valid():
+                    print("6\n",serializer,"\n")
+                    serializer.save()
+                # se envía el id original 
+                origen_asignado = despachador.origen_asignado
+            else:
+                # se envía el id del OrigenTemporal activo
+                origen_asignado = origentemporal.id_origen
+        else:
+            # se envía el id original 
+            origen_asignado = despachador.origen_asignado
+        
 
         queryproyecto = Proyecto.objects.get(id=id_proyecto)
         serializerProyecto = ProyectoAnidadoSerializer(queryproyecto)
@@ -98,7 +174,7 @@ class SincronizacionDescargaApiView(APIView):
             "voucher": serializerVoucher.data
         }
         return Response(descarga, status=status.HTTP_200_OK)
-        # descarga['request']= True
+        # descarga['request']= False
         # descarga['data']= serializerDespachador.errors
         # return Response(descarga, status=status.HTTP_400_BAD_REQUEST)
 
@@ -144,15 +220,22 @@ class MaterialViewSet(viewsets.ModelViewSet):
     queryset = Material.objects.all()
     serializer_class = MaterialSerializer
 
+class CodigoQRViewSet(viewsets.ModelViewSet):
+    # permission_classes = (IsAuthenticated,)
+    queryset = CodigoQR.objects.all()
+    serializer_class = CodigoQRSerializer
+
+class OrigenTemporalViewSet(viewsets.ModelViewSet):
+    # permission_classes = (IsAuthenticated,)
+    queryset = OrigenTemporal.objects.all()
+    serializer_class = OrigenTemporalSerializer
+
 class VoucherViewSet(viewsets.ModelViewSet):
     # permission_classes = (IsAuthenticated,)
     queryset = Voucher.objects.all()
     serializer_class = VoucherSerializer
 
-class CodigoQRViewSet(viewsets.ModelViewSet):
-    permission_classes = (IsAuthenticated,)
-    queryset = CodigoQR.objects.all()
-    serializer_class = VoucherSerializer
+
 
 
 
