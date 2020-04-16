@@ -76,30 +76,32 @@ class CambiarOrigenApiView(APIView):
     # serializer_class = DespachadorSerializer
 
     def put(self, request):
-        despachador = Despachador.objects.get(pk=request.user)
+        try: 
+            despachador = Despachador.objects.get(pk=request.user)
 
-        # Si ya existe un origen Temporal para el usuario se desactivará 
-        if OrigenTemporal.objects.filter(despachador_id=despachador.id, activo=True).exists():
-            origentemporal = OrigenTemporal.objects.get(despachador_id=despachador.id, activo=True)
-            req = {'activo':False}
-            serializer = OrigenTemporalSerializer(origentemporal, data=req, partial=True)
-            if serializer.is_valid():
-                serializer.save()
+            # Si ya existe un origen Temporal para el usuario se desactivará 
+            if OrigenTemporal.objects.filter(despachador_id=despachador.id, activo=True).exists():
+                origentemporal = OrigenTemporal.objects.get(despachador_id=despachador.id, activo=True)
+                req = {'activo':False}
+                serializer = OrigenTemporalSerializer(origentemporal, data=req, partial=True)
+                if serializer.is_valid():
+                    serializer.save()
 
-        # Se obtiene el origen al que se quiere cambiar (si es que existe)
-        origen = Origen.objects.get(pk=request.data['id_origen'])
-        req = {}
-        req['despachador'] = despachador.id
-        req['id_origen'] = origen.id
-        serializerOT = OrigenTemporalSerializer(data=req, partial=True)
-        if serializerOT.is_valid():
-            serializerOT.save()
-            # se envía un mail a cada administrador del proyecto informando el cambio
-            thread = threading.Thread(target=cambio_origen_mail, args=(despachador,origen,serializerOT.data['id']))
-            thread.start()
-            return Response(serializerOT.data)
-        return Response(serializerOT.errors, status=status.HTTP_400_BAD_REQUEST)
-
+            # Se obtiene el origen al que se quiere cambiar (si es que existe)
+            origen = Origen.objects.get(pk=request.data['id_origen'])
+            req = {}
+            req['despachador'] = despachador.id
+            req['id_origen'] = origen.id
+            serializerOT = OrigenTemporalSerializer(data=req, partial=True)
+            if serializerOT.is_valid(raise_exception=True):
+                serializerOT.save()
+                # se envía un mail a cada administrador del proyecto informando el cambio
+                thread = threading.Thread(target=cambio_origen_mail, args=(despachador,origen,serializerOT.data['id']))
+                thread.start()
+                return Response(serializerOT.data)
+            return Response(serializerOT.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            raise e
 
 class IngresarDespachoApiView(APIView):
     serializer_class = IngresarDespachoSerializer
@@ -139,7 +141,7 @@ class SincronizacionDescargaApiView(APIView):
         if OrigenTemporal.objects.filter(despachador_id=id_despachador, activo=True).exists():
             origentemporal = OrigenTemporal.objects.get(despachador_id=id_despachador, activo=True)
             inicio = origentemporal.timestamp_inicio
-            duracion = timezone.timedelta(minutes=origentemporal.duracion)
+            duracion = timezone.timedelta(hours=origentemporal.duracion)
             print(inicio + duracion)
             print(timezone.now())
             if (inicio + duracion) < timezone.now():

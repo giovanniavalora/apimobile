@@ -33,8 +33,8 @@ ALLOWED_HOSTS = ["*",]
 #ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS','*').split(' ')
 
 AUTH_USER_MODEL = 'api.User'
-# Application definition
 
+# Application definition
 INSTALLED_APPS = [
     'corsheaders',
     'django.contrib.admin',
@@ -175,7 +175,6 @@ USE_TZ = True
 
 
 # Email
-
 EMAIL_HOST = 'smtp.office365.com'
 EMAIL_PORT = 587
 EMAIL_HOST_USER = os.environ.get("USER_MAIL")

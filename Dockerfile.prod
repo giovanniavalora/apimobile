@@ -3,7 +3,7 @@
 ###########
 
 # pull official base image
-FROM python:3.7.6-alpine as builder
+FROM python:3.8.2-alpine as builder
 
 # set work directory
 WORKDIR /usr/src/apimobile
@@ -32,7 +32,7 @@ RUN pip wheel --no-cache-dir --no-deps --wheel-dir /usr/src/apimobile/wheels -r 
 #########
 
 # pull official base image
-FROM python:3.7.6-alpine
+FROM python:3.8.2-alpine
 
 # create directory for the app user
 RUN mkdir -p /home/apimobile
