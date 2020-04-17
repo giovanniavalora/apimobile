@@ -103,7 +103,7 @@ class CambiarOrigenApiView(APIView):
         except Exception as e:
             raise e
 
-class IngresarDespachoApiView(APIView):
+class IngresarArregloDespachoApiView(APIView):
     serializer_class = IngresarDespachoSerializer
 
     def post(self, request, *args, **kwargs):
@@ -119,6 +119,26 @@ class IngresarDespachoApiView(APIView):
                 resp['request']= False
                 resp['error'] = file_serializer.errors
                 return Response(resp, status=status.HTTP_201_CREATED)
+        resp['request']= True
+        resp['data'] = serializer.data
+        return Response(resp, status=status.HTTP_201_CREATED)
+
+
+class IngresarDespachoApiView(APIView):
+    serializer_class = IngresarDespachoSerializer
+
+    def post(self, request, *args, **kwargs):
+        resp = {}
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        parser_classes = (MultiPartParser, FormParser)
+        file_serializer = VoucherSerializer(data=objeto)
+        if file_serializer.is_valid():
+            file_serializer.save()
+        else:
+            resp['request']= False
+            resp['error'] = file_serializer.errors
+            return Response(resp, status=status.HTTP_201_CREATED)
         resp['request']= True
         resp['data'] = serializer.data
         return Response(resp, status=status.HTTP_201_CREATED)
