@@ -45,7 +45,7 @@ def cambio_origen_mail(despachador,origen,id_origentemporal):
         duracion = timezone.timedelta(minutes=origentemporal.duracion)
         administrador = Administrador.objects.filter(proyecto=despachador.proyecto, is_superuser=True)
         
-
+        print("Preparando email")
         subject = '[Cambio Origen - '+origen.nombre_origen+'] '+despachador.nombre+' '+despachador.apellido
         message = despachador.nombre+' '+despachador.apellido+'\n\n'
         message = message+'Origen asignado: '+origenasignado.nombre_origen+'\n'
@@ -68,6 +68,7 @@ def cambio_origen_mail(despachador,origen,id_origentemporal):
         print('got SMTPRecipientsRefused', file=DEBUGSTREAM)
         raise e.recipients
     except Exception as e:
+        print('error: No se pudo enviar email')
         raise e
 
 
