@@ -352,9 +352,14 @@ def authenticate_user(request):
             try:
                 payload = jwt_payload_handler(user)
                 token = jwt.encode(payload, settings.SECRET_KEY)
+                serializer = DespachadorSerializer(user)
+                print(serializer)
                 resp = {}
                 resp['request']= True
-                resp['data']= {'token': token}
+                resp['data']= {
+                    'token': token,
+                    'info': serializer.data
+                }
                 user_logged_in.send(sender=user.__class__, request=request, user=user) # almacenamos el último tiempo de inicio de sesión del usuario con este código.
                 return Response(resp, status=status.HTTP_200_OK)
 
