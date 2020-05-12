@@ -35,7 +35,6 @@ import pytz
 # timezone.activate(settings.TIME_ZONE)
 # timezone.localtime(timezone.now())
 
-
 def cambio_origen_mail(despachador,origen,id_origentemporal):
     try: 
         # Se obtiene el origen asignado oficial (si es que existe)
