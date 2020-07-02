@@ -41,7 +41,7 @@ def cambio_origen_mail(despachador,origen,id_origentemporal):
         origenasignado = Origen.objects.get(pk=despachador.origen_asignado)
         origentemporal = OrigenTemporal.objects.get(pk=id_origentemporal)
         inicio = origentemporal.timestamp_inicio
-        duracion = timezone.timedelta(minutes=origentemporal.duracion)
+        duracion = timezone.timedelta(hours=origentemporal.duracion)
         administrador = Administrador.objects.filter(proyecto=despachador.proyecto, is_superuser=True)
         
         print("Preparando email")
