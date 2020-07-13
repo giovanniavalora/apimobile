@@ -128,6 +128,9 @@ class IngresarDespachoApiView(APIView):
     serializer_class = IngresarDespachoSerializer
 
     def post(self, request, *args, **kwargs):
+        print("Ingreso Despacho: ",request)
+        print("Ingreso Despacho self: ",self)
+        # print("Ingreso Despacho args: ",args)
         resp = {}
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
