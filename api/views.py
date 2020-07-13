@@ -144,6 +144,8 @@ class IngresarDespachoApiView(APIView):
             return Response(resp, status=status.HTTP_201_CREATED)
         resp['request']= True
         resp['data'] = serializer.data
+        resp['req'] = request
+        resp['self'] = self
         return Response(resp, status=status.HTTP_201_CREATED)
 
 
