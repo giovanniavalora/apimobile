@@ -34,7 +34,6 @@ urlpatterns = [
     path('login/', authenticate_user),
     path('update/', UserRetrieveUpdateAPIView.as_view()),
     path('SincronizacionDescarga/', SincronizacionDescargaApiView.as_view()),
-    path('IngresarDespacho/', IngresarDespachoApiView.as_view()),
     path('CambiarOrigen/', CambiarOrigenApiView.as_view()),
 
     
