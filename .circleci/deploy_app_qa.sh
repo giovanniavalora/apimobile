@@ -1,4 +1,4 @@
-cd /home/ohl/controlCamionesApi/apimantenedor
+cd /home/ohl/controlCamionesApi/apimobile
 git checkout develop
 git pull
 cd /home/ohl/controlCamionesApi/
