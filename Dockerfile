@@ -1,5 +1,6 @@
 # pull official base image
-FROM python:3.7.6-alpine
+# FROM python:3.7.6-alpine
+FROM python:3.8.2-alpine
 
 # set work directory
 WORKDIR /usr/src/apimobile
@@ -7,6 +8,9 @@ WORKDIR /usr/src/apimobile
 # set environment variables
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
+
+# install Timezones for alpine
+RUN apk add tzdata
 
 # install psycopg2 dependencies
 RUN apk update && apk add postgresql-dev gcc python3-dev musl-dev
