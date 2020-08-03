@@ -280,41 +280,53 @@ class VoucherViewSet(viewsets.ModelViewSet):
 
 
 # Registra un nuevo usuario Administrador
-class CreateAdminAPIView(APIView):
-    # permission_classes = (IsAuthenticated,)
-    permission_classes = (AllowAny,)
-    serializer_class = AdministradorSerializer
-    def post(self, request):
-        user = request.data
-        serializer = self.serializer_class(data=user)
-        resp = {}
-        if serializer.is_valid(raise_exception=True):
-            serializer.save()
-            resp['request']= True
-            resp['data']= serializer.data
-            return Response(resp, status=status.HTTP_201_CREATED)
-        else:
-            resp['request']= True
-            resp['data']= serializer.errors
-            return Response(resp, status=status.HTTP_400_BAD_REQUEST)
+# class CreateAdminAPIView(APIView):
+#     # permission_classes = (IsAuthenticated,)
+#     permission_classes = (AllowAny,)
+#     serializer_class = AdministradorSerializer
+#     def post(self, request):
+#         user = request.data
+#         print("request:",request)
+#         print("request.data",request.data)
+#         print("user",user)
+#         serializer = self.serializer_class(data=user)
+#         print("serializer:",serializer)
+        
+        
+#         resp = {}
+#         if serializer.is_valid(raise_exception=True):
+#             print("proceso04")
+#             serializer.save(user)
+#             # serializer.create(user)
+#             print("proceso05")
+#             serializer.proyecto.set([Proyecto.objects.first()])
+#             print("proceso06")
+#             # serializer.proyecto.add
+#             resp['request']= True
+#             resp['data']= serializer.data
+#             return Response(resp, status=status.HTTP_201_CREATED)
+#         else:
+#             resp['request']= True
+#             resp['data']= serializer.errors
+#             return Response(resp, status=status.HTTP_400_BAD_REQUEST)
 
 
 # Registra un nuevo usuario Despachador
-class CreateDespAPIView(APIView):
-    # permission_classes = (IsAuthenticated,)
-    permission_classes = (AllowAny,) # permitir que cualquier usuario (autenticado o no) acceda a esta URL.
-    def post(self, request):
-        user = request.data
-        serializer= DespachadorSerializer(data=user)
-        resp = {}
-        if serializer.is_valid(raise_exception=True):
-            serializer.save() #el metodo .save del serializador llamará al metodo create cuando desee crear un objeto y al método update cuando desee actualizar.
-            resp['request']= True
-            resp['data']= serializer.data
-            return Response(resp, status=status.HTTP_201_CREATED)
-        resp['request']= False
-        resp['data']= serializer.errors
-        return Response(resp, status=status.HTTP_400_BAD_REQUEST)
+# class CreateDespAPIView(APIView):
+#     # permission_classes = (IsAuthenticated,)
+#     permission_classes = (AllowAny,) # permitir que cualquier usuario (autenticado o no) acceda a esta URL.
+#     def post(self, request):
+#         user = request.data
+#         serializer= DespachadorSerializer(data=user)
+#         resp = {}
+#         if serializer.is_valid(raise_exception=True):
+#             serializer.save() #el metodo .save del serializador llamará al metodo create cuando desee crear un objeto y al método update cuando desee actualizar.
+#             resp['request']= True
+#             resp['data']= serializer.data
+#             return Response(resp, status=status.HTTP_201_CREATED)
+#         resp['request']= False
+#         resp['data']= serializer.errors
+#         return Response(resp, status=status.HTTP_400_BAD_REQUEST)
 
 
 # Obtener información de usuario o Actualizarlo (con token)

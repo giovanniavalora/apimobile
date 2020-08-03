@@ -29,8 +29,8 @@ router.register(r'CodigoQR', views.CodigoQRViewSet)
 urlpatterns = [
     path('', include(router.urls)),
     
-    path('crearAdministrador/', CreateAdminAPIView.as_view()),
-    path('crearDespachador/', CreateDespAPIView.as_view()),
+    # path('crearAdministrador/', CreateAdminAPIView.as_view()),
+    # path('crearDespachador/', CreateDespAPIView.as_view()),
     path('login/', authenticate_user),
     path('update/', UserRetrieveUpdateAPIView.as_view()),
     path('SincronizacionDescarga/', SincronizacionDescargaApiView.as_view()),
