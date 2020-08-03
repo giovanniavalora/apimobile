@@ -353,8 +353,8 @@ class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
 
 # Login (Devuelve el Token)
 @api_view(['POST'])
-@authentication_classes([])
-@permission_classes([])
+# @authentication_classes([])
+# @permission_classes([])
 def authenticate_user(request):
     try:
         rut = request.data['rut']
