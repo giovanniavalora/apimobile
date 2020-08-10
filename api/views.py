@@ -153,6 +153,7 @@ class SincronizacionDescargaApiView(APIView):
     permission_classes = (IsAuthenticated,)
     
     def get(self, request):
+        print("\n\nGET Sincronización Descarga......")
         despachador = Despachador.objects.get(rut=request.user)
         id_despachador = despachador.id
         id_proyecto = despachador.proyecto_id
@@ -187,9 +188,8 @@ class SincronizacionDescargaApiView(APIView):
         queryproyecto = Proyecto.objects.get(id=id_proyecto)
         serializerProyecto = ProyectoAnidadoSerializer(queryproyecto)
 
-        queryvoucher = Voucher.objects.filter(despachador=id_despachador)
+        queryvoucher = Voucher.objects.filter(despachador=id_despachador,fecha=timezone.now())
         serializerVoucher = VoucherSerializer(queryvoucher, many=True)
-
 
         serializerProyecto.data['origen']= True
         descarga = {}
