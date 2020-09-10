@@ -11,8 +11,6 @@ WORKDIR /usr/src/apimobile
 # set environment variables
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
-RUN apk add --no-cache tzdata
-ENV TZ America/Santiago
 
 # install psycopg2 dependencies
 RUN apk update && apk add postgresql-dev gcc python3-dev musl-dev
@@ -40,6 +38,12 @@ RUN mkdir -p /home/apimobile
 
 # create the app user
 RUN addgroup -S apimobile && adduser -S apimobile -G apimobile
+
+# install Timezones for alpine
+RUN apk add tzdata
+RUN cp /usr/share/zoneinfo/America/Santiago /etc/localtime
+RUN echo "America/Santiago" > /etc/timezone
+# RUN apk del tzdata
 
 # create the appropriate directories
 ENV HOME=/home/apimobile
