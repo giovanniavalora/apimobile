@@ -33,12 +33,12 @@ DEBUG = int(os.environ.get("DEBUG", default=0))
 ALLOWED_HOSTS = ["*",]
 #ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS','*').split(' ')
 
-AUTH_USER_MODEL = 'api.User'
+# AUTH_USER_MODEL = 'api.User'
 
 # Application definition
 INSTALLED_APPS = [
     'corsheaders',
-    'django.contrib.admin',
+    # 'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
