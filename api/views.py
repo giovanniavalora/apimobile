@@ -252,156 +252,156 @@ class CodigoQRViewSet(viewsets.ModelViewSet):
     queryset = CodigoQR.objects.all()
     serializer_class = CodigoQRSerializer
 
-class OrigenTemporalViewSet(viewsets.ModelViewSet):
-    # permission_classes = (IsAuthenticated,)
-    queryset = OrigenTemporal.objects.all()
-    serializer_class = OrigenTemporalSerializer
-
-class VoucherViewSet(viewsets.ModelViewSet):
-    # permission_classes = (IsAuthenticated,)
-    queryset = Voucher.objects.all()
-    serializer_class = VoucherSerializer
-
-
-
-
-
-# Registra un nuevo usuario General (ni despachador ni administrador)
-# class CreateUserAPIView(APIView):
+# class OrigenTemporalViewSet(viewsets.ModelViewSet):
 #     # permission_classes = (IsAuthenticated,)
-#     permission_classes = (AllowAny,) # permitir que cualquier usuario (autenticado o no) acceda a esta URL.
-#     def post(self, request):
-#         user = request.data
-#         print(user)
-#         serializer = UserSerializer(data=user)
-#         serializer.is_valid(raise_exception=True)
-#         serializer.save()
-#         return Response(serializer.data, status=status.HTTP_201_CREATED)
+#     queryset = OrigenTemporal.objects.all()
+#     serializer_class = OrigenTemporalSerializer
 
-
-# Registra un nuevo usuario Administrador
-# class CreateAdminAPIView(APIView):
+# class VoucherViewSet(viewsets.ModelViewSet):
 #     # permission_classes = (IsAuthenticated,)
-#     permission_classes = (AllowAny,)
-#     serializer_class = AdministradorSerializer
-#     def post(self, request):
-#         user = request.data
-#         print("request:",request)
-#         print("request.data",request.data)
-#         print("user",user)
-#         serializer = self.serializer_class(data=user)
-#         print("serializer:",serializer)
+#     queryset = Voucher.objects.all()
+#     serializer_class = VoucherSerializer
+
+
+
+
+
+# # Registra un nuevo usuario General (ni despachador ni administrador)
+# # class CreateUserAPIView(APIView):
+# #     # permission_classes = (IsAuthenticated,)
+# #     permission_classes = (AllowAny,) # permitir que cualquier usuario (autenticado o no) acceda a esta URL.
+# #     def post(self, request):
+# #         user = request.data
+# #         print(user)
+# #         serializer = UserSerializer(data=user)
+# #         serializer.is_valid(raise_exception=True)
+# #         serializer.save()
+# #         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+# # Registra un nuevo usuario Administrador
+# # class CreateAdminAPIView(APIView):
+# #     # permission_classes = (IsAuthenticated,)
+# #     permission_classes = (AllowAny,)
+# #     serializer_class = AdministradorSerializer
+# #     def post(self, request):
+# #         user = request.data
+# #         print("request:",request)
+# #         print("request.data",request.data)
+# #         print("user",user)
+# #         serializer = self.serializer_class(data=user)
+# #         print("serializer:",serializer)
         
         
-#         resp = {}
-#         if serializer.is_valid(raise_exception=True):
-#             print("proceso04")
-#             serializer.save(user)
-#             # serializer.create(user)
-#             print("proceso05")
-#             serializer.proyecto.set([Proyecto.objects.first()])
-#             print("proceso06")
-#             # serializer.proyecto.add
-#             resp['request']= True
-#             resp['data']= serializer.data
-#             return Response(resp, status=status.HTTP_201_CREATED)
-#         else:
-#             resp['request']= True
-#             resp['data']= serializer.errors
-#             return Response(resp, status=status.HTTP_400_BAD_REQUEST)
+# #         resp = {}
+# #         if serializer.is_valid(raise_exception=True):
+# #             print("proceso04")
+# #             serializer.save(user)
+# #             # serializer.create(user)
+# #             print("proceso05")
+# #             serializer.proyecto.set([Proyecto.objects.first()])
+# #             print("proceso06")
+# #             # serializer.proyecto.add
+# #             resp['request']= True
+# #             resp['data']= serializer.data
+# #             return Response(resp, status=status.HTTP_201_CREATED)
+# #         else:
+# #             resp['request']= True
+# #             resp['data']= serializer.errors
+# #             return Response(resp, status=status.HTTP_400_BAD_REQUEST)
 
 
-# Registra un nuevo usuario Despachador
-# class CreateDespAPIView(APIView):
-#     # permission_classes = (IsAuthenticated,)
-#     permission_classes = (AllowAny,) # permitir que cualquier usuario (autenticado o no) acceda a esta URL.
-#     def post(self, request):
-#         user = request.data
-#         serializer= DespachadorSerializer(data=user)
+# # Registra un nuevo usuario Despachador
+# # class CreateDespAPIView(APIView):
+# #     # permission_classes = (IsAuthenticated,)
+# #     permission_classes = (AllowAny,) # permitir que cualquier usuario (autenticado o no) acceda a esta URL.
+# #     def post(self, request):
+# #         user = request.data
+# #         serializer= DespachadorSerializer(data=user)
+# #         resp = {}
+# #         if serializer.is_valid(raise_exception=True):
+# #             serializer.save() #el metodo .save del serializador llamará al metodo create cuando desee crear un objeto y al método update cuando desee actualizar.
+# #             resp['request']= True
+# #             resp['data']= serializer.data
+# #             return Response(resp, status=status.HTTP_201_CREATED)
+# #         resp['request']= False
+# #         resp['data']= serializer.errors
+# #         return Response(resp, status=status.HTTP_400_BAD_REQUEST)
+
+
+# # Obtener información de usuario o Actualizarlo (con token)
+# class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
+#     permission_classes = (IsAuthenticated,)# Allow only authenticated users to access this url
+#     serializer_class = UserSerializer
+#     def get(self, request, *args, **kwargs):
+#         serializer = self.serializer_class(request.user) #serializador para manejar la conversión de nuestro objeto `Usuario` en algo que puede ser JSONified y enviado al cliente.
+#         return Response(serializer.data, status=status.HTTP_200_OK)
+
+#     def put(self, request, *args, **kwargs):
+#         serializer_data = request.data.get('user', {})
+#         serializer = UserSerializer(request.user, data=serializer_data, partial=True)
 #         resp = {}
 #         if serializer.is_valid(raise_exception=True):
-#             serializer.save() #el metodo .save del serializador llamará al metodo create cuando desee crear un objeto y al método update cuando desee actualizar.
+#             serializer.save()
 #             resp['request']= True
 #             resp['data']= serializer.data
-#             return Response(resp, status=status.HTTP_201_CREATED)
-#         resp['request']= False
+#             return Response(resp, status=status.HTTP_200_OK)
+#         resp['request']= True
 #         resp['data']= serializer.errors
-#         return Response(resp, status=status.HTTP_400_BAD_REQUEST)
+#         return Response(resp, status=HTTP_400_BAD_REQUEST)
 
 
-# Obtener información de usuario o Actualizarlo (con token)
-class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
-    permission_classes = (IsAuthenticated,)# Allow only authenticated users to access this url
-    serializer_class = UserSerializer
-    def get(self, request, *args, **kwargs):
-        serializer = self.serializer_class(request.user) #serializador para manejar la conversión de nuestro objeto `Usuario` en algo que puede ser JSONified y enviado al cliente.
-        return Response(serializer.data, status=status.HTTP_200_OK)
+# # Login (Devuelve el Token)
+# @api_view(['POST'])
+# # @authentication_classes([])
+# # @permission_classes([])
+# def authenticate_user(request):
+#     try:
+#         rut = request.data['rut']
+#         password = request.data['password']
+#         if User.objects.filter(rut=rut).exists():
+#             user = User.objects.get(rut=rut)
+#         else:
+#             res = {'request': False, 'error': 'no puede autenticarse con las credenciales dadas o la cuenta ha sido desactivada'}
+#             return Response(res, status=status.HTTP_403_FORBIDDEN)
+#         if user.check_password(password):
+#             try:
+#                 payload = jwt_payload_handler(user)
+#                 token = jwt.encode(payload, settings.SECRET_KEY)
+#                 serializer = DespachadorSerializer(user)
+#                 print(serializer)
+#                 resp = {}
+#                 resp['request']= True
+#                 resp['data']= {
+#                     'token': token,
+#                     'info': serializer.data
+#                 }
+#                 user_logged_in.send(sender=user.__class__, request=request, user=user) # almacenamos el último tiempo de inicio de sesión del usuario con este código.
+#                 return Response(resp, status=status.HTTP_200_OK)
 
-    def put(self, request, *args, **kwargs):
-        serializer_data = request.data.get('user', {})
-        serializer = UserSerializer(request.user, data=serializer_data, partial=True)
-        resp = {}
-        if serializer.is_valid(raise_exception=True):
-            serializer.save()
-            resp['request']= True
-            resp['data']= serializer.data
-            return Response(resp, status=status.HTTP_200_OK)
-        resp['request']= True
-        resp['data']= serializer.errors
-        return Response(resp, status=HTTP_400_BAD_REQUEST)
-
-
-# Login (Devuelve el Token)
-@api_view(['POST'])
-# @authentication_classes([])
-# @permission_classes([])
-def authenticate_user(request):
-    try:
-        rut = request.data['rut']
-        password = request.data['password']
-        if User.objects.filter(rut=rut).exists():
-            user = User.objects.get(rut=rut)
-        else:
-            res = {'request': False, 'error': 'no puede autenticarse con las credenciales dadas o la cuenta ha sido desactivada'}
-            return Response(res, status=status.HTTP_403_FORBIDDEN)
-        if user.check_password(password):
-            try:
-                payload = jwt_payload_handler(user)
-                token = jwt.encode(payload, settings.SECRET_KEY)
-                serializer = DespachadorSerializer(user)
-                print(serializer)
-                resp = {}
-                resp['request']= True
-                resp['data']= {
-                    'token': token,
-                    'info': serializer.data
-                }
-                user_logged_in.send(sender=user.__class__, request=request, user=user) # almacenamos el último tiempo de inicio de sesión del usuario con este código.
-                return Response(resp, status=status.HTTP_200_OK)
-
-            except Exception as e:
-                raise e
-        else:
-            res = {'request': False, 'error': 'no puede autenticarse con las credenciales dadas o la cuenta ha sido desactivada'}
-            return Response(res, status=status.HTTP_403_FORBIDDEN)
-    except KeyError:
-        res = {'request': False, 'error': 'por favor proporcione un rut y una password'}
-        return Response(res, status=status.HTTP_403_FORBIDDEN)
+#             except Exception as e:
+#                 raise e
+#         else:
+#             res = {'request': False, 'error': 'no puede autenticarse con las credenciales dadas o la cuenta ha sido desactivada'}
+#             return Response(res, status=status.HTTP_403_FORBIDDEN)
+#     except KeyError:
+#         res = {'request': False, 'error': 'por favor proporcione un rut y una password'}
+#         return Response(res, status=status.HTTP_403_FORBIDDEN)
     
 
 
 
-# class Texto(APIView):
-#     def post(self,request):
-#         # serializer_context = {
-#         #     'request': request,
-#         # }
-#         if(request.data['proyect_id']>0):
-#             adminregister=Administrador.objects.all().filter(proyecto=request.data['proyect_id'])
-#             if(len(adminregister)>0):
-#                 serializer = AdministradorSerializer(adminregister, many=True)
-#                 return Response(serializer.data)
-#             else:
-#                 return Response("No existen administradores en este proyecto")
-#         else:
-#             return Response("Proyecto no existe")
+# # class Texto(APIView):
+# #     def post(self,request):
+# #         # serializer_context = {
+# #         #     'request': request,
+# #         # }
+# #         if(request.data['proyect_id']>0):
+# #             adminregister=Administrador.objects.all().filter(proyecto=request.data['proyect_id'])
+# #             if(len(adminregister)>0):
+# #                 serializer = AdministradorSerializer(adminregister, many=True)
+# #                 return Response(serializer.data)
+# #             else:
+# #                 return Response("No existen administradores en este proyecto")
+# #         else:
+# #             return Response("Proyecto no existe")

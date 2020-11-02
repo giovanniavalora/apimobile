@@ -72,6 +72,7 @@ class Camion(models.Model):
         ('m3','m3'),
         ('ton','ton')
     ]
+    # id = models.AutoField(primary_key=True)
     subcontratista = models.ForeignKey(Subcontratista, on_delete=models.CASCADE)
     patente_camion = models.CharField(max_length = 20)
     marca_camion = models.CharField(max_length = 20)
@@ -93,7 +94,7 @@ class Camion(models.Model):
 
 class Conductor(models.Model):
     subcontratista = models.ForeignKey(Subcontratista, on_delete=models.CASCADE)
-    camion = models.ManyToManyField(Camion, related_name='camion', blank=True)
+    camion = models.ManyToManyField(Camion, blank=True)
     nombre = models.CharField(max_length = 30)
     apellido = models.CharField(max_length = 30)
     rut = models.CharField(max_length = 20)
@@ -105,7 +106,7 @@ class Conductor(models.Model):
     class Meta:
         verbose_name_plural = "Conductores"
         constraints = [
-            models.UniqueConstraint(fields=['subcontratista', 'camion'], name='Cndctr_subcontratista_camion')
+            models.UniqueConstraint(fields=['subcontratista','rut'], name='Cndctr_subcontratista_camion')
         ]
 
 
@@ -286,6 +287,7 @@ class Administrador(User, PermissionsMixin):
         ]
 
 class Despachador(User, PermissionsMixin):
+    rut_despachador = models.CharField(max_length=15)
     telefono = models.CharField(max_length=30, blank=True)
     origen_asignado = models.IntegerField(blank=True, null=True)
     proyecto = models.ForeignKey(Proyecto, on_delete=models.CASCADE, blank=True)
@@ -301,34 +303,34 @@ class Despachador(User, PermissionsMixin):
     class Meta:
         verbose_name_plural = "Despachadores"
         constraints = [
-            models.UniqueConstraint(fields=['proyecto', 'rut'], name='Dspchdr_proyecto_rut')
+            models.UniqueConstraint(fields=['proyecto', 'rut_despachador'], name='Dspchdr_proyecto_rut')
         ]
 ##### fin usuarios #####
 
 
 
-# class Despachador(models.Model):
-#     rut = models.CharField(max_length=15, unique=true) 
-#     nombre = models.CharField(max_length=30)
-#     apellido = models.CharField(max_length=30)
-#     password = models.CharField(max_length=100)
+# # class Despachador(models.Model):
+# #     rut = models.CharField(max_length=15, unique=true) 
+# #     nombre = models.CharField(max_length=30)
+# #     apellido = models.CharField(max_length=30)
+# #     password = models.CharField(max_length=100)
 
-#     is_active = models.BooleanField(default=True)
-#     is_staff = models.BooleanField(default=False)
-#     date_joined = models.DateTimeField(default=timezone.now)
+# #     is_active = models.BooleanField(default=True)
+# #     is_staff = models.BooleanField(default=False)
+# #     date_joined = models.DateTimeField(default=timezone.now)
 
-#     telefono = models.CharField(max_length=30, blank=True)
-#     origen_asignado = models.IntegerField(blank=True, null=True)
-#     proyecto = models.ForeignKey(Proyecto, on_delete=models.CASCADE, blank=True)
+# #     telefono = models.CharField(max_length=30, blank=True)
+# #     origen_asignado = models.IntegerField(blank=True, null=True)
+# #     proyecto = models.ForeignKey(Proyecto, on_delete=models.CASCADE, blank=True)
 
-#     objects = DespManager()
-#     USERNAME_FIELD = 'rut'
-#     REQUIRED_FIELDS = ['nombre', 'apellido']
-#     def __str__(self):
-#         return self.rut
-#     def save(self, *args, **kwargs):
-#         super(User, self).save(*args, **kwargs)
-#         return self
+# #     objects = DespManager()
+# #     USERNAME_FIELD = 'rut'
+# #     REQUIRED_FIELDS = ['nombre', 'apellido']
+# #     def __str__(self):
+# #         return self.rut
+# #     def save(self, *args, **kwargs):
+# #         super(User, self).save(*args, **kwargs)
+# #         return self
 
 
 

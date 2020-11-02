@@ -91,6 +91,11 @@ class CamionSerializer(serializers.ModelSerializer):
         model = Camion
         fields = '__all__'
 
+class ConductorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Conductor
+        fields = '__all__'
+
 class OrigenSerializer(serializers.ModelSerializer):
     class Meta:
         model = Origen
