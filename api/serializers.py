@@ -76,10 +76,16 @@ class DespachadorSerializer(serializers.ModelSerializer):
         instance.nombre = validated_data.get('nombre', instance.nombre)
         instance.apellido = validated_data.get('apellido', instance.apellido)
         instance.is_active = validated_data.get('is_active', instance.is_active)
-        instance.proyecto_id = validated_data.get('proyecto_id', instance.proyecto_id)
+        instance.proyecto_desp = validated_data.get('proyecto_desp', instance.proyecto_id)
+        # instance.rut_despachador = validated_data.get('rut_despachador', instance.rut_despachador)
         # instance.proyecto = validated_data.get('created', instance.proyecto)
         instance.save()
         return instance
+
+class JornadaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Subcontratista
+        fields = '__all__'
 
 class SubcontratistaSerializer(serializers.ModelSerializer):
     class Meta:
@@ -144,12 +150,14 @@ class IngresarDespachoSerializer(serializers.Serializer):
 
 ##### Serializers anidados para el servicio Sincronización Descarga
 class CamionAnidadoSerializer(serializers.ModelSerializer):
+    conductor_set = ConductorSerializer(many=True, read_only=True)
     codigoqr_set = CodigoQRSerializer(many=True, read_only=True)
     class Meta:
         model = Camion
         fields = '__all__'
 class SubcontratistaAnidadoSerializer(serializers.ModelSerializer):
     camion_set = CamionAnidadoSerializer(many=True, read_only=True)
+    conductor_set = ConductorSerializer(many=True, read_only=True)
     class Meta:
         model = Subcontratista
         fields = '__all__'

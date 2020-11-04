@@ -31,7 +31,7 @@ class Proyecto(models.Model):
 class Jornada(models.Model):
     proyecto = models.ForeignKey(Proyecto, on_delete=models.CASCADE)
     titulo_jornada = models.CharField(max_length = 100)
-    hora_inicio = models.DateTimeField(default=timezone.now)
+    hora_inicio = models.TimeField()
     duracion = models.IntegerField(default=12)
     available = models.BooleanField(default=True)    
     def __str__(self):
@@ -250,15 +250,17 @@ class DespManager(BaseUserManager):
 
 
 class User(AbstractBaseUser, PermissionsMixin):
-    rut = models.CharField(max_length=15) 
+    rut = models.CharField(max_length=15, unique=True) 
+    # proyecto = models.ManyToManyField(Proyecto, related_name='proyecto', blank=True)
     nombre = models.CharField(max_length=30)
     apellido = models.CharField(max_length=30)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     date_joined = models.DateTimeField(default=timezone.now)
 
+
     objects = UserManager()
-    USERNAME_FIELD = 'id'
+    USERNAME_FIELD = 'rut'
     REQUIRED_FIELDS = ['nombre', 'apellido']
     def __str__(self):
         return self.rut
@@ -269,10 +271,10 @@ class User(AbstractBaseUser, PermissionsMixin):
 class Administrador(User, PermissionsMixin):
     email = models.CharField(max_length=100, unique=True)
     cargo = models.CharField(max_length=100, blank=True)
-    proyecto = models.ManyToManyField(Proyecto, related_name='proyecto', blank=True)
+    proyecto_admin = models.ManyToManyField(Proyecto, related_name='proyecto_admin', blank=True)
     
     objects = AdminManager()
-    USERNAME_FIELD = 'email'
+    USERNAME_FIELD = 'rut'
     REQUIRED_FIELDS = ['nombre', 'apellido']
     def __str__(self):
         return self.nombre
@@ -282,18 +284,16 @@ class Administrador(User, PermissionsMixin):
     #     return self
     class Meta:
         verbose_name_plural = "Administradores"
-        constraints = [
-            models.UniqueConstraint(fields=['email'], name='Admnstrdr_rut')
-        ]
+
 
 class Despachador(User, PermissionsMixin):
-    rut_despachador = models.CharField(max_length=15)
+    # rut_despachador = User.rut
     telefono = models.CharField(max_length=30, blank=True)
     origen_asignado = models.IntegerField(blank=True, null=True)
-    proyecto = models.ForeignKey(Proyecto, on_delete=models.CASCADE, blank=True)
+    proyecto_desp = models.ManyToManyField(Proyecto, related_name='proyecto_desp', blank=True)
 
     objects = DespManager()
-    USERNAME_FIELD = 'id'
+    USERNAME_FIELD = 'rut'
     REQUIRED_FIELDS = ['nombre', 'apellido']
     def __str__(self):
         return self.nombre
@@ -302,9 +302,9 @@ class Despachador(User, PermissionsMixin):
     #     return self
     class Meta:
         verbose_name_plural = "Despachadores"
-        constraints = [
-            models.UniqueConstraint(fields=['proyecto', 'rut_despachador'], name='Dspchdr_proyecto_rut')
-        ]
+        # constraints = [
+        #     models.UniqueConstraint(fields=['proyecto', 'rut'], name='Dspchdr_proyecto_rut')
+        # ]
 ##### fin usuarios #####
 
 
@@ -416,7 +416,7 @@ class Voucher(models.Model):
     hora = models.TimeField()
     contador_impresiones = models.IntegerField()
     id_qr = models.CharField(max_length = 255, blank=True) #para validar si es un qr escaneado es válido o no
-    id_ticket_reemplazado = models.IntegerField()
+    id_ticket_reemplazado = models.CharField(max_length = 255, blank=True)
     available = models.BooleanField(default=True)
     # despachos realizados (cantidad)
     # Volumen_total_desplazado_a_la_fecha
