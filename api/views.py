@@ -298,10 +298,10 @@ class OrigenTemporalViewSet(viewsets.ModelViewSet):
     queryset = OrigenTemporal.objects.all()
     serializer_class = OrigenTemporalSerializer
 
-class VoucherViewSet(viewsets.ModelViewSet):
-    # permission_classes = (IsAuthenticated,)
-    queryset = Voucher.objects.all()
-    serializer_class = VoucherSerializer
+# class VoucherViewSet(viewsets.ModelViewSet):
+#     # permission_classes = (IsAuthenticated,)
+#     queryset = Voucher.objects.all()
+#     serializer_class = VoucherSerializer
 
 class VoucherList(APIView):
     # permission_classes = (IsAuthenticated,)
@@ -313,7 +313,8 @@ class VoucherList(APIView):
 
     def post(self, request):
         ticket = request.data       
-        serializer= self.serializer_class(data=ticket)
+        voucherserializer= self.serializer_class(data=ticket)
+        proyecto = Proyecto.objects.get(id=ticket['id_proyecto'])
 
         # if hasattr(ticket,'id_ticket_reemplazado'):
         #     print(ticket['id_ticket_reemplazado'])
@@ -327,25 +328,26 @@ class VoucherList(APIView):
             print("corregir_ticket = False")
 
         resp = {}
-        if serializer.is_valid(raise_exception=True):
-            serializer.save() #.save llamará al metodo create del serializador cuando desee crear un objeto y al método update cuando desee actualizar.
-
-            if(corregir_ticket):            
+        if voucherserializer.is_valid(raise_exception=True):
+            if(corregir_ticket):     
                 ticket_a_corregir = Voucher.objects.get(id=ticket['id_ticket_reemplazado'])
-                ticket_a_corregir.id_ticket_reemplazado = serializer.data['id']
+                voucherserializer.save(contador_impresiones=ticket_a_corregir.contador_impresiones)
+                ticket_a_corregir.id_ticket_reemplazado = voucherserializer.data['id']
                 ticket_a_corregir.available = False
                 ticket_a_corregir.save()
+            else:
+                voucherserializer.save(contador_impresiones=proyecto.cantidad_voucher_imprimir)
 
             resp['request']= True
-            resp['data']= serializer.data
+            resp['data']= voucherserializer.data
             return Response(resp, status=status.HTTP_201_CREATED)
         resp['request']= False
-        resp['data']= serializer.errors
+        resp['data']= voucherserializer.errors
         return Response(resp, status=status.HTTP_400_BAD_REQUEST)
+
 
 class Reimprimir(APIView):
     # permission_classes = (IsAuthenticated,)
-
     def post(self, request):
         try:
             ticket = request.data       

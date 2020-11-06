@@ -414,7 +414,7 @@ class Voucher(models.Model):
     hora_servidor = models.TimeField(auto_now_add=True)
     fecha = models.DateField()
     hora = models.TimeField()
-    contador_impresiones = models.IntegerField()
+    contador_impresiones = models.IntegerField(blank=True,null=True)
     id_qr = models.CharField(max_length = 255, blank=True) #para validar si es un qr escaneado es válido o no
     id_ticket_reemplazado = models.CharField(max_length = 255, blank=True)
     available = models.BooleanField(default=True)
