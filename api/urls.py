@@ -32,6 +32,9 @@ urlpatterns = [
     path('update/', UserRetrieveUpdateAPIView.as_view()),
     path('SincronizacionDescarga/', SincronizacionDescargaApiView.as_view()),
     path('CambiarOrigen/', CambiarOrigenApiView.as_view()),
+    path('Despacho/', VoucherList.as_view()),
+    path('Reimprimir/', Reimprimir.as_view()),
+    
 
     
     # path('crearUsuario/', CreateUserAPIView.as_view()),

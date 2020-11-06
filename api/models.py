@@ -363,8 +363,8 @@ class Voucher(models.Model):
     apellido_despachador = models.CharField(max_length=30)
     telefono_despachador = models.CharField(max_length=30, blank=True)
     
-    # id_proyecto = models.CharField(max_length = 255, blank=True)
-    proyecto = models.CharField(max_length = 100)
+    id_proyecto = models.CharField(max_length = 255, blank=True)
+    proyecto = models.CharField(max_length = 100) #nombre del proyecto
     nombre_cliente = models.CharField(max_length = 100)
     rut_cliente = models.CharField(max_length = 20)
 
@@ -422,5 +422,5 @@ class Voucher(models.Model):
     # Volumen_total_desplazado_a_la_fecha
 
     def __str__(self):
-        cadena = "voucher_"+str(self.id)+" "+str(self.despachador)
+        cadena = "voucher_"+str(self.id)+":"+str(self.despachador)
         return cadena

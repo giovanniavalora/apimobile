@@ -303,6 +303,68 @@ class VoucherViewSet(viewsets.ModelViewSet):
     queryset = Voucher.objects.all()
     serializer_class = VoucherSerializer
 
+class VoucherList(APIView):
+    # permission_classes = (IsAuthenticated,)
+    serializer_class = VoucherSerializer
+    def get(self, request, format=None):
+        query = Voucher.objects.all()
+        serializer = self.serializer_class(query, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        ticket = request.data       
+        serializer= self.serializer_class(data=ticket)
+
+        # if hasattr(ticket,'id_ticket_reemplazado'):
+        #     print(ticket['id_ticket_reemplazado'])
+        # else:
+        #     print("nones")
+        corregir_ticket = False
+        try:
+            print(ticket['id_ticket_reemplazado'])
+            corregir_ticket = True
+        except:
+            print("corregir_ticket = False")
+
+        resp = {}
+        if serializer.is_valid(raise_exception=True):
+            serializer.save() #.save llamará al metodo create del serializador cuando desee crear un objeto y al método update cuando desee actualizar.
+
+            if(corregir_ticket):            
+                ticket_a_corregir = Voucher.objects.get(id=ticket['id_ticket_reemplazado'])
+                ticket_a_corregir.id_ticket_reemplazado = serializer.data['id']
+                ticket_a_corregir.available = False
+                ticket_a_corregir.save()
+
+            resp['request']= True
+            resp['data']= serializer.data
+            return Response(resp, status=status.HTTP_201_CREATED)
+        resp['request']= False
+        resp['data']= serializer.errors
+        return Response(resp, status=status.HTTP_400_BAD_REQUEST)
+
+class Reimprimir(APIView):
+    # permission_classes = (IsAuthenticated,)
+
+    def post(self, request):
+        try:
+            ticket = request.data       
+            # obtener objeto voucher a Reimprimir con id
+            voucher = Voucher.objects.get(id=ticket['id_voucher'])
+            # serializer = VoucherSerializer(data=voucher)
+            proyecto = Proyecto.objects.get(id=voucher.id_proyecto)
+            print(voucher.contador_impresiones)
+            voucher.contador_impresiones = voucher.contador_impresiones + proyecto.cantidad_voucher_imprimir
+            print(voucher.contador_impresiones)
+            
+            voucher.save()
+            resp = {}
+            resp['request']= True
+            resp['data']= voucher.contador_impresiones
+            return Response(resp, status=status.HTTP_201_CREATED)
+
+        except Exception as e:
+            raise e
 
 
 
