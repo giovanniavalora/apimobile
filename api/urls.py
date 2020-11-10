@@ -21,7 +21,7 @@ router.register(r'Suborigen', views.SuborigenViewSet)
 router.register(r'Destino', views.DestinoViewSet)
 router.register(r'Material', views.MaterialViewSet)
 router.register(r'OrigenTemporal', views.OrigenTemporalViewSet)
-router.register(r'Voucher', views.VoucherViewSet)
+# router.register(r'Voucher', views.VoucherViewSet)
 router.register(r'CodigoQR', views.CodigoQRViewSet)
 
 
@@ -32,6 +32,9 @@ urlpatterns = [
     path('update/', UserRetrieveUpdateAPIView.as_view()),
     path('SincronizacionDescarga/', SincronizacionDescargaApiView.as_view()),
     path('CambiarOrigen/', CambiarOrigenApiView.as_view()),
+    path('Voucher/', VoucherList.as_view()),
+    path('Reimprimir/', Reimprimir.as_view()),
+    
 
     
     # path('crearUsuario/', CreateUserAPIView.as_view()),

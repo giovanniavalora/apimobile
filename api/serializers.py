@@ -1,7 +1,3 @@
-# from rest_framework.validators import UniqueValidator
-# from django.contrib.auth import authenticate
-# from django.contrib.auth.password_validation import validate_password
-
 from rest_framework import serializers
 # from .models import User, Administrador, Despachador, Proyecto, Subcontratista, Camion, Origen, Suborigen, Destino, Material, Voucher
 # from .models import Administrador, Despachador, Proyecto, Subcontratista, Camion, Origen, Suborigen, Destino, Material, Voucher
@@ -32,7 +28,6 @@ class UserSerializer(serializers.ModelSerializer):
         instance.nombre = validated_data.get('nombre', instance.nombre)
         instance.apellido = validated_data.get('apellido', instance.apellido)
         instance.is_active = validated_data.get('is_active', instance.is_active)
-        instance.proyecto_id = validated_data.get('proyecto_id', instance.proyecto_id)
         instance.save()
         return instance
 
@@ -53,7 +48,7 @@ class AdministradorSerializer(serializers.ModelSerializer):
         instance.nombre = validated_data.get('nombre', instance.nombre)
         instance.apellido = validated_data.get('apellido', instance.apellido)
         instance.is_active = validated_data.get('is_active', instance.is_active)
-        instance.proyecto_id = validated_data.get('proyecto_id', instance.proyecto_id)
+        instance.proyecto_admin = validated_data.get('proyecto_admin', instance.proyecto_admin)
         # instance.proyecto = validated_data.get('created', instance.proyecto)
         instance.save()
         return instance
@@ -137,15 +132,6 @@ class VoucherSerializer(serializers.ModelSerializer):
     class Meta:
         model = Voucher
         fields = '__all__'
-
-
-##### Serializers del servicio Ingresar Despacho
-class IngresarDespachoSerializer(serializers.Serializer):
-    vouchers = VoucherSerializer(many=True)
-    # class Meta:
-    #     model = Voucher
-    #     fields = '__all__'
-
 
 
 ##### Serializers anidados para el servicio Sincronización Descarga
