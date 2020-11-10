@@ -308,33 +308,6 @@ class Despachador(User, PermissionsMixin):
 ##### fin usuarios #####
 
 
-
-# # class Despachador(models.Model):
-# #     rut = models.CharField(max_length=15, unique=true) 
-# #     nombre = models.CharField(max_length=30)
-# #     apellido = models.CharField(max_length=30)
-# #     password = models.CharField(max_length=100)
-
-# #     is_active = models.BooleanField(default=True)
-# #     is_staff = models.BooleanField(default=False)
-# #     date_joined = models.DateTimeField(default=timezone.now)
-
-# #     telefono = models.CharField(max_length=30, blank=True)
-# #     origen_asignado = models.IntegerField(blank=True, null=True)
-# #     proyecto = models.ForeignKey(Proyecto, on_delete=models.CASCADE, blank=True)
-
-# #     objects = DespManager()
-# #     USERNAME_FIELD = 'rut'
-# #     REQUIRED_FIELDS = ['nombre', 'apellido']
-# #     def __str__(self):
-# #         return self.rut
-# #     def save(self, *args, **kwargs):
-# #         super(User, self).save(*args, **kwargs)
-# #         return self
-
-
-
-
 def fin_origen_temporal():
     return timezone.now() + timezone.timedelta(hours=12)
 class OrigenTemporal(models.Model):
@@ -356,7 +329,7 @@ def get_upload_path_patente(instance, filename):
          id_desp=instance.despachador.id, ahora=now, fn=filename)
 class Voucher(models.Model):
     despachador = models.ForeignKey(Despachador, on_delete=models.CASCADE)
-    jornada = models.ForeignKey(Jornada, on_delete=models.CASCADE)
+    jornada = models.ForeignKey(Jornada, on_delete=models.CASCADE,blank=True,null=True)
     
     rut_despachador = models.CharField(max_length=15)
     nombre_despachador = models.CharField(max_length=30)
