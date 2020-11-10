@@ -103,51 +103,6 @@ class CambiarOrigenApiView(APIView):
         except Exception as e:
             raise e
 
-class IngresarArregloDespachoApiView(APIView):
-    serializer_class = IngresarDespachoSerializer
-
-    def post(self, request, *args, **kwargs):
-        resp = {}
-        serializer = self.serializer_class(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        for objeto in serializer.data["vouchers"]:
-            parser_classes = (MultiPartParser, FormParser)
-            file_serializer = VoucherSerializer(data=objeto)
-            if file_serializer.is_valid():
-                file_serializer.save()
-            else:
-                resp['request']= False
-                resp['error'] = file_serializer.errors
-                return Response(resp, status=status.HTTP_201_CREATED)
-        resp['request']= True
-        resp['data'] = serializer.data
-        return Response(resp, status=status.HTTP_201_CREATED)
-
-
-class IngresarDespachoApiView(APIView):
-    serializer_class = IngresarDespachoSerializer
-
-    def post(self, request, *args, **kwargs):
-        print("Ingreso Despacho: ",request)
-        print("Ingreso Despacho self: ",self)
-        # print("Ingreso Despacho args: ",args)
-        resp = {}
-        serializer = self.serializer_class(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        parser_classes = (MultiPartParser, FormParser)
-        file_serializer = VoucherSerializer(data=objeto)
-        if file_serializer.is_valid():
-            file_serializer.save()
-        else:
-            resp['request']= False
-            resp['error'] = file_serializer.errors
-            return Response(resp, status=status.HTTP_201_CREATED)
-        resp['request']= True
-        resp['data'] = serializer.data
-        resp['req'] = request
-        resp['self'] = self
-        return Response(resp, status=status.HTTP_201_CREATED)
-
 
 class SincronizacionDescargaApiView(APIView):
     permission_classes = (IsAuthenticated,)
@@ -184,16 +139,6 @@ class SincronizacionDescargaApiView(APIView):
         print("\n PROYECTO:", proyecto)
         print("\n PROYECTO ID:", proyecto.id)
 
-
-        # serializerdespachador = DespachadorSerializer(despachador)
-        # print("\nDESPACHADOR:",serializerdespachador.data)
-
-        # origen_asignado = despachador.origen_asignado
-
-        # serializerDespachador = DespachadorSerializer(despachador) 
-        # id_despachador = serializerDespachador.data['id']
-        # id_proyecto = serializerDespachador.data['proyecto']
-
         #Origen Asignado
         if OrigenTemporal.objects.filter(despachador_id=id_despachador, activo=True).exists():
             origentemporal = OrigenTemporal.objects.get(despachador_id=id_despachador, activo=True)
@@ -219,7 +164,7 @@ class SincronizacionDescargaApiView(APIView):
         queryproyecto = Proyecto.objects.get(id=id_proyecto)
         serializerProyecto = ProyectoAnidadoSerializer(queryproyecto)
 
-        queryvoucher = Voucher.objects.filter(despachador=id_despachador,fecha=timezone.now())
+        queryvoucher = Voucher.objects.filter(despachador=id_despachador,fecha=timezone.now(),available=True)
         serializerVoucher = VoucherSerializer(queryvoucher, many=True)
 
         serializerProyecto.data['origen']= True
@@ -232,15 +177,6 @@ class SincronizacionDescargaApiView(APIView):
             "voucher": serializerVoucher.data
         }
         return Response(descarga, status=status.HTTP_200_OK)
-        # descarga['request']= False
-        # descarga['data']= serializerDespachador.errors
-        # return Response(descarga, status=status.HTTP_400_BAD_REQUEST)
-
-
-
-# class SincDesc(RetrieveUpdateAPIView):
-#     serializer_class = ProyectoAnidadoSerializer
-#     queryset = Proyecto.objects.all()
 
 
 class ProyectoViewSet(viewsets.ModelViewSet):
@@ -315,6 +251,7 @@ class VoucherList(APIView):
         ticket = request.data       
         voucherserializer= self.serializer_class(data=ticket)
         proyecto = Proyecto.objects.get(id=ticket['id_proyecto'])
+        jornada = Proyecto.objects.get(id=1)
 
         # if hasattr(ticket,'id_ticket_reemplazado'):
         #     print(ticket['id_ticket_reemplazado'])
@@ -331,12 +268,12 @@ class VoucherList(APIView):
         if voucherserializer.is_valid(raise_exception=True):
             if(corregir_ticket):     
                 ticket_a_corregir = Voucher.objects.get(id=ticket['id_ticket_reemplazado'])
-                voucherserializer.save(contador_impresiones=ticket_a_corregir.contador_impresiones)
+                voucherserializer.save(contador_impresiones=ticket_a_corregir.contador_impresiones,jornada_id=1)
                 ticket_a_corregir.id_ticket_reemplazado = voucherserializer.data['id']
                 ticket_a_corregir.available = False
                 ticket_a_corregir.save()
             else:
-                voucherserializer.save(contador_impresiones=proyecto.cantidad_voucher_imprimir)
+                voucherserializer.save(contador_impresiones=proyecto.cantidad_voucher_imprimir,jornada_id=1)
 
             resp['request']= True
             resp['data']= voucherserializer.data
@@ -367,71 +304,6 @@ class Reimprimir(APIView):
 
         except Exception as e:
             raise e
-
-
-
-
-# Registra un nuevo usuario General (ni despachador ni administrador)
-# class CreateUserAPIView(APIView):
-#     # permission_classes = (IsAuthenticated,)
-#     permission_classes = (AllowAny,) # permitir que cualquier usuario (autenticado o no) acceda a esta URL.
-#     def post(self, request):
-#         user = request.data
-#         print(user)
-#         serializer = UserSerializer(data=user)
-#         serializer.is_valid(raise_exception=True)
-#         serializer.save()
-#         return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-
-# Registra un nuevo usuario Administrador
-# class CreateAdminAPIView(APIView):
-#     # permission_classes = (IsAuthenticated,)
-#     permission_classes = (AllowAny,)
-#     serializer_class = AdministradorSerializer
-#     def post(self, request):
-#         user = request.data
-#         print("request:",request)
-#         print("request.data",request.data)
-#         print("user",user)
-#         serializer = self.serializer_class(data=user)
-#         print("serializer:",serializer)
-        
-        
-#         resp = {}
-#         if serializer.is_valid(raise_exception=True):
-#             print("proceso04")
-#             serializer.save(user)
-#             # serializer.create(user)
-#             print("proceso05")
-#             serializer.proyecto.set([Proyecto.objects.first()])
-#             print("proceso06")
-#             # serializer.proyecto.add
-#             resp['request']= True
-#             resp['data']= serializer.data
-#             return Response(resp, status=status.HTTP_201_CREATED)
-#         else:
-#             resp['request']= True
-#             resp['data']= serializer.errors
-#             return Response(resp, status=status.HTTP_400_BAD_REQUEST)
-
-
-# Registra un nuevo usuario Despachador
-# class CreateDespAPIView(APIView):
-#     # permission_classes = (IsAuthenticated,)
-#     permission_classes = (AllowAny,) # permitir que cualquier usuario (autenticado o no) acceda a esta URL.
-#     def post(self, request):
-#         user = request.data
-#         serializer= DespachadorSerializer(data=user)
-#         resp = {}
-#         if serializer.is_valid(raise_exception=True):
-#             serializer.save() #el metodo .save del serializador llamará al metodo create cuando desee crear un objeto y al método update cuando desee actualizar.
-#             resp['request']= True
-#             resp['data']= serializer.data
-#             return Response(resp, status=status.HTTP_201_CREATED)
-#         resp['request']= False
-#         resp['data']= serializer.errors
-#         return Response(resp, status=status.HTTP_400_BAD_REQUEST)
 
 
 # Obtener información de usuario o Actualizarlo (con token)
@@ -494,26 +366,6 @@ def authenticate_user(request):
         res = {'request': False, 'error': 'por favor proporcione un rut y una password'}
         return Response(res, status=status.HTTP_403_FORBIDDEN)
     
-
-
-
-# class Texto(APIView):
-#     def post(self,request):
-#         # serializer_context = {
-#         #     'request': request,
-#         # }
-#         if(request.data['proyect_id']>0):
-#             adminregister=Administrador.objects.all().filter(proyecto=request.data['proyect_id'])
-#             if(len(adminregister)>0):
-#                 serializer = AdministradorSerializer(adminregister, many=True)
-#                 return Response(serializer.data)
-#             else:
-#                 return Response("No existen administradores en este proyecto")
-#         else:
-#             return Response("Proyecto no existe")
-
-
-
 
 #Borrar
 class AdministradorList(APIView):
