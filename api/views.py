@@ -27,13 +27,14 @@ from .serializers import *
 from .models import *
 
 from django.core.mail import EmailMultiAlternatives
-import smtplib
+# import smtplib
 
 from django.utils import timezone
 import pytz
 utc=pytz.UTC
 # timezone.activate(settings.TIME_ZONE)
 # timezone.localtime(timezone.now())
+
 
 def cambio_origen_mail(despachador,origen,id_origentemporal):
     try: 
@@ -42,7 +43,8 @@ def cambio_origen_mail(despachador,origen,id_origentemporal):
         origentemporal = OrigenTemporal.objects.get(pk=id_origentemporal)
         inicio = origentemporal.timestamp_inicio
         duracion = timezone.timedelta(hours=origentemporal.duracion)
-        administrador = Administrador.objects.filter(proyecto=despachador.proyecto, is_superuser=True)
+        proyecto = despachador.proyecto_desp.latest('id')
+        administrador = Administrador.objects.filter(proyecto_admin=proyecto.id, is_superuser=True)
         
         print("Preparando email")
         subject = '[Cambio Origen - '+origen.nombre_origen+'] '+despachador.nombre+' '+despachador.apellido
@@ -52,24 +54,21 @@ def cambio_origen_mail(despachador,origen,id_origentemporal):
         message = message+'Inicio: '+str(inicio)+'\n'
         message = message+'Fin: '+str(inicio+duracion)
 
-        message = 'Subject: {}\n\n{}'.format(subject,message)
-
-        server = smtplib.SMTP(settings.EMAIL_HOST,settings.EMAIL_PORT)
-        server.starttls()
-        server.login(settings.EMAIL_HOST_USER,settings.EMAIL_HOST_PASSWORD)
         # Obtener los mails de todos los admin del proyecto al que corresponde el despachador
+        lista_correos = []
         for admin in administrador:
-            server.sendmail(settings.EMAIL_HOST_USER,admin.email,message)
-            print("[Cambio de origen] correo enviado a ",admin.email)
-        server.quit()
-        
-    except smtplib.SMTPRecipientsRefused as e:
-        print('got SMTPRecipientsRefused', file=DEBUGSTREAM)
-        raise e.recipients
+            lista_correos.append(admin.email)
+            
+        msg = EmailMultiAlternatives(subject,message,settings.EMAIL_HOST_USER,lista_correos)
+        # msg.attach_alternative(html_message,"text/html")
+        msg.send()
+
+        resp={}
+        resp['message']= message
+        return Response(resp)
     except Exception as e:
         print('error: No se pudo enviar email')
         raise e
-
 
 class CambiarOrigenApiView(APIView):
     permission_classes = (IsAuthenticated,)
@@ -133,6 +132,7 @@ class SincronizacionDescargaApiView(APIView):
         id_despachador = despachador.id
 
         ### El de mayor id será seleccionado como el proyecto activo. (puede cambiar)
+        # Esta lógica también se usa en Cambio de Origen para buscar los Admin pertenecientes a proyecto del despachador
         # proyectos = despachador.proyecto_desp.all()
         proyecto = despachador.proyecto_desp.latest('id') # proyecto = despachador.proyecto_desp.all().order_by("-id")[0]
         id_proyecto = proyecto.id
