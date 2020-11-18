@@ -135,6 +135,24 @@ class VoucherSerializer(serializers.ModelSerializer):
 
 
 ##### Serializers anidados para el servicio Sincronización Descarga
+# class FilteredMaterialSerializer(serializers.ListSerializer):
+#     def to_representation(self, data):
+#         data = data.filter(user=self.context['request'].user, edition__hide=False)
+#         return super(FilteredMaterialSerializer, self).to_representation(data)
+class FilteredSuborigenSerializer(serializers.ListSerializer):
+    def to_representation(self, data):
+        data = data.filter(activo=True)
+        return super(FilteredSuborigenSerializer, self).to_representation(data)
+# class MaterialAnidadoSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         list_serializer_class = MaterialSerializer
+#         model = Material
+#         fields = '__all__'
+class SuborigenAnidadoSerializer(serializers.ModelSerializer):
+    class Meta:
+        list_serializer_class = FilteredSuborigenSerializer
+        model = Suborigen
+        fields = '__all__'
 class CamionAnidadoSerializer(serializers.ModelSerializer):
     conductor_set = ConductorSerializer(many=True, read_only=True)
     codigoqr_set = CodigoQRSerializer(many=True, read_only=True)
@@ -153,7 +171,7 @@ class DestinoAnidadoSerializer(serializers.ModelSerializer):
         model = Destino
         fields = '__all__'
 class OrigenAnidadoSerializer(serializers.ModelSerializer):
-    suborigen_set = SuborigenSerializer(many=True, read_only=True)
+    suborigen_set = SuborigenAnidadoSerializer(many=True, read_only=True)
     class Meta:
         model = Origen
         fields = '__all__'

@@ -44,13 +44,16 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # Nuestra aplicacion API
+    # Almacenamiento en azure storage:
+    'storages',
+    # Nuestra aplicacion api creada con startapp:
     'api',
-    # Biblioteca de implementación API Rest para django
+    # Biblioteca de implementación API Rest para django:
     'rest_framework',
-    # Biblioteca de backend de autenticacion JWT
+
+    ## Biblioteca de backend de autenticacion JWT:
     # 'rest_framework_simplejwt',
-    # Paquete de terceros para el registro de usuarios y puntos finales de autenticación 
+    ## Paquete de terceros para el registro de usuarios y puntos finales de autenticación :
     # 'djoser',
 ]
 
@@ -186,8 +189,24 @@ EMAIL_USE_TLS = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
-STATIC_URL = "/staticfiles/"
-STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
-MEDIA_URL = "/mediafiles/"
-MEDIA_ROOT = os.path.join(BASE_DIR, "mediafiles")
+DEFAULT_FILE_STORAGE = 'config.custom_azure.AzureMediaStorage'
+STATICFILES_STORAGE = 'config.custom_azure.AzureStaticStorage'
+
+AZURE_ACCOUNT_NAME = "almacenamientofaena"
+AZURE_CUSTOM_DOMAIN = f'{AZURE_ACCOUNT_NAME}.blob.core.windows.net'
+
+
+STATIC_LOCATION = "static"
+STATIC_URL = f'{AZURE_ACCOUNT_NAME}/{STATIC_LOCATION}/'
+
+MEDIA_LOCATION = "media"
+MEDIA_URL = f'{AZURE_ACCOUNT_NAME}/{MEDIA_LOCATION}/'
+
+
+
+# STATIC_URL = "/staticfiles/"
+# STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+
+# MEDIA_URL = "/mediafiles/"
+# MEDIA_ROOT = os.path.join(BASE_DIR, "mediafiles")
